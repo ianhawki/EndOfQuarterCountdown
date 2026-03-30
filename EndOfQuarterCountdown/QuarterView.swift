@@ -36,6 +36,26 @@ struct QuarterView: View {
                     .foregroundColor(.secondary)
             }
             Spacer()
+
+            // Sync button
+            Button {
+                Task { await model.fetchDates() }
+            } label: {
+                if model.isFetching {
+                    ProgressView()
+                        .scaleEffect(0.65)
+                        .frame(width: 18, height: 18)
+                } else {
+                    Image(systemName: "arrow.clockwise.icloud")
+                        .font(.title3)
+                        .foregroundColor(.accentColor)
+                }
+            }
+            .buttonStyle(.plain)
+            .disabled(model.isFetching)
+            .help("Sync dates from web")
+
+            // Edit button
             Button {
                 withAnimation(.easeInOut(duration: 0.2)) {
                     showingEditor.toggle()
@@ -67,6 +87,37 @@ struct QuarterView: View {
 
     private var quarterEditor: some View {
         VStack(spacing: 0) {
+            // Sync status
+            HStack {
+                if let error = model.fetchError {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundColor(.orange)
+                        .font(.caption)
+                    Text(error)
+                        .font(.caption)
+                        .foregroundColor(.orange)
+                } else if let last = model.lastFetched {
+                    Image(systemName: "checkmark.icloud")
+                        .foregroundColor(.secondary)
+                        .font(.caption)
+                    Text("Synced \(relativeTime(last))")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                } else {
+                    Image(systemName: "icloud.slash")
+                        .foregroundColor(.secondary)
+                        .font(.caption)
+                    Text("Not yet synced from web")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+
+            Divider()
+
             QuarterRow(label: "Q1", date: $model.q1End, isCurrent: model.currentQuarter == 1)
             Divider().padding(.leading, 44)
             QuarterRow(label: "Q2", date: $model.q2End, isCurrent: model.currentQuarter == 2)
@@ -92,12 +143,6 @@ struct QuarterView: View {
         .padding(.vertical, 8)
     }
 
-    private var appVersion: String {
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
-        let build   = Bundle.main.infoDictionary?["CFBundleVersion"]            as? String ?? "?"
-        return "v\(version) (\(build))"
-    }
-
     // MARK: - Helpers
 
     private var separator: some View {
@@ -112,6 +157,18 @@ struct QuarterView: View {
         f.dateStyle = .long
         f.timeStyle = .none
         return f.string(from: date)
+    }
+
+    private func relativeTime(_ date: Date) -> String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .abbreviated
+        return formatter.localizedString(for: date, relativeTo: Date())
+    }
+
+    private var appVersion: String {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
+        let build   = Bundle.main.infoDictionary?["CFBundleVersion"]            as? String ?? "?"
+        return "v\(version) (\(build))"
     }
 }
 

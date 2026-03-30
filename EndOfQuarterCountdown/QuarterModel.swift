@@ -13,6 +13,11 @@ class QuarterModel: ObservableObject {
     @Published var currentQuarter: Int = 1
     @Published var currentQuarterEnd: Date = Date()
 
+    @Published var isFetching = false
+    @Published var fetchError: String? = nil
+    @Published var lastFetched: Date? = nil
+
+    private let feedURL = URL(string: "https://hawkinsmultimedia.com.au/endofquarter.html")!
     private var timer: Timer?
 
     init() {
@@ -24,10 +29,76 @@ class QuarterModel: ObservableObject {
         q3End = (defaults.object(forKey: "q3End") as? Date) ?? Self.date(month: 9,  day: 30, year: year)
         q4End = (defaults.object(forKey: "q4End") as? Date) ?? Self.date(month: 12, day: 31, year: year)
 
+        if let saved = defaults.object(forKey: "lastFetched") as? Date {
+            lastFetched = saved
+        }
+
         update()
         timer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.update() }
         }
+    }
+
+    // MARK: - Web Fetch
+
+    func fetchDates() async {
+        isFetching = true
+        fetchError = nil
+
+        do {
+            let (data, _) = try await URLSession.shared.data(from: feedURL)
+            guard let html = String(data: data, encoding: .utf8) else {
+                fetchError = "Could not read page content"
+                isFetching = false
+                return
+            }
+
+            let formatter = DateFormatter()
+            formatter.dateFormat = "dd/MM/yyyy"
+            formatter.locale = Locale(identifier: "en_AU")
+
+            let pattern = "Q(\\d)\\s*:\\s*(\\d{2}/\\d{2}/\\d{4})"
+            let regex = try NSRegularExpression(pattern: pattern)
+            let matches = regex.matches(in: html, range: NSRange(html.startIndex..., in: html))
+
+            guard !matches.isEmpty else {
+                fetchError = "No quarter dates found on page"
+                isFetching = false
+                return
+            }
+
+            for match in matches {
+                guard let qRange = Range(match.range(at: 1), in: html),
+                      let dRange = Range(match.range(at: 2), in: html),
+                      let quarter = Int(html[qRange]),
+                      let date = formatter.date(from: String(html[dRange])) else { continue }
+
+                let endOfDay = endOfDay(date)
+                switch quarter {
+                case 1: q1End = endOfDay
+                case 2: q2End = endOfDay
+                case 3: q3End = endOfDay
+                case 4: q4End = endOfDay
+                default: break
+                }
+            }
+
+            lastFetched = Date()
+            UserDefaults.standard.set(lastFetched, forKey: "lastFetched")
+
+        } catch {
+            fetchError = error.localizedDescription
+        }
+
+        isFetching = false
+    }
+
+    // MARK: - Helpers
+
+    private func endOfDay(_ date: Date) -> Date {
+        var c = Calendar.current.dateComponents([.year, .month, .day], from: date)
+        c.hour = 23; c.minute = 59; c.second = 59
+        return Calendar.current.date(from: c) ?? date
     }
 
     static func date(month: Int, day: Int, year: Int) -> Date {
@@ -49,12 +120,10 @@ class QuarterModel: ObservableObject {
         let now = Date()
         let quarters = [(1, q1End), (2, q2End), (3, q3End), (4, q4End)]
 
-        // Pick the next quarter end that hasn't passed yet
         if let next = quarters.first(where: { $0.1 > now }) {
             currentQuarter = next.0
             currentQuarterEnd = next.1
         } else {
-            // All quarters passed — stay on Q4
             currentQuarter = 4
             currentQuarterEnd = q4End
         }
