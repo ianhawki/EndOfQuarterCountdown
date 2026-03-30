@@ -16,8 +16,11 @@ class QuarterModel: ObservableObject {
     @Published var isFetching = false
     @Published var fetchError: String? = nil
     @Published var lastFetched: Date? = nil
+    @Published var feedURLString: String {
+        didSet { UserDefaults.standard.set(feedURLString, forKey: "feedURL") }
+    }
 
-    private let feedURL = URL(string: "https://hawkinsmultimedia.com.au/endofquarter.html")!
+    private static let defaultFeedURL = "https://hawkinsmultimedia.com.au/endofquarter.html"
     private var timer: Timer?
 
     init() {
@@ -28,6 +31,7 @@ class QuarterModel: ObservableObject {
         q2End = (defaults.object(forKey: "q2End") as? Date) ?? Self.date(month: 6,  day: 30, year: year)
         q3End = (defaults.object(forKey: "q3End") as? Date) ?? Self.date(month: 9,  day: 30, year: year)
         q4End = (defaults.object(forKey: "q4End") as? Date) ?? Self.date(month: 12, day: 31, year: year)
+        feedURLString = defaults.string(forKey: "feedURL") ?? Self.defaultFeedURL
 
         if let saved = defaults.object(forKey: "lastFetched") as? Date {
             lastFetched = saved
@@ -44,6 +48,13 @@ class QuarterModel: ObservableObject {
     func fetchDates() async {
         isFetching = true
         fetchError = nil
+
+        guard let feedURL = URL(string: feedURLString),
+              feedURL.scheme == "https" || feedURL.scheme == "http" else {
+            fetchError = "Invalid URL"
+            isFetching = false
+            return
+        }
 
         do {
             let (data, _) = try await URLSession.shared.data(from: feedURL)

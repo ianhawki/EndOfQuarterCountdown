@@ -38,17 +38,19 @@ A lightweight macOS menu bar app that counts down to the end of your current fin
 4. Dates save automatically
 
 ### Sync from the web
-1. Click the **iCloud sync icon** (next to the sliders icon)
-2. The app fetches the latest quarter dates from the configured URL
-3. The editor panel shows the last synced time and any errors
+1. Click the menu bar icon and open the editor with the **sliders icon**
+2. Edit the **Sync URL** field and press **Save** to point it at any page you like
+3. Click the **iCloud sync icon** (header, next to the sliders icon) to fetch dates
+4. The editor panel shows the last synced time and any errors
 
-The sync URL is `https://hawkinsmultimedia.com.au/endofquarter.html` and expects dates in this format:
+The app defaults to `https://hawkinsmultimedia.com.au/endofquarter.html`. Any URL can be used as long as the page contains dates in this format:
 ```
 Q1 : 25/10/2025
 Q2 : 24/01/2026
 Q3 : 25/04/2026
 Q4 : 25/07/2026
 ```
+The URL is saved to UserDefaults and remembered between launches.
 
 ## Project Structure
 

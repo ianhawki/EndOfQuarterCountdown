@@ -3,6 +3,7 @@ import SwiftUI
 struct QuarterView: View {
     @EnvironmentObject var model: QuarterModel
     @State private var showingEditor = false
+    @State private var urlDraft = ""
 
     var body: some View {
         VStack(spacing: 0) {
@@ -118,6 +119,33 @@ struct QuarterView: View {
 
             Divider()
 
+            // URL field
+            VStack(alignment: .leading, spacing: 6) {
+                Text("SYNC URL")
+                    .font(.system(size: 9, weight: .semibold))
+                    .foregroundColor(.secondary)
+                    .kerning(1)
+                HStack(spacing: 6) {
+                    TextField("https://", text: $urlDraft)
+                        .textFieldStyle(.roundedBorder)
+                        .font(.system(size: 11))
+                        .onSubmit { saveURL() }
+                    Button("Save") { saveURL() }
+                        .font(.caption)
+                        .disabled(urlDraft == model.feedURLString || !isValidURL(urlDraft))
+                }
+                if !isValidURL(urlDraft) {
+                    Text("Enter a valid http or https URL")
+                        .font(.caption2)
+                        .foregroundColor(.red)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .onAppear { urlDraft = model.feedURLString }
+
+            Divider()
+
             QuarterRow(label: "Q1", date: $model.q1End, isCurrent: model.currentQuarter == 1)
             Divider().padding(.leading, 44)
             QuarterRow(label: "Q2", date: $model.q2End, isCurrent: model.currentQuarter == 2)
@@ -163,6 +191,16 @@ struct QuarterView: View {
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .abbreviated
         return formatter.localizedString(for: date, relativeTo: Date())
+    }
+
+    private func saveURL() {
+        guard isValidURL(urlDraft) else { return }
+        model.feedURLString = urlDraft
+    }
+
+    private func isValidURL(_ string: String) -> Bool {
+        guard let url = URL(string: string) else { return false }
+        return url.scheme == "https" || url.scheme == "http"
     }
 
     private var appVersion: String {
