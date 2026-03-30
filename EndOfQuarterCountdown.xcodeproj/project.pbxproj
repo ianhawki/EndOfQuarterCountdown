@@ -14,7 +14,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		BB00000000000000000000010 /* EndOfQuarterCountdown.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "End of Quarter Countdown.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		BB00000000000000000000010 /* End of Quarter Countdown.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "End of Quarter Countdown.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB00000000000000000000011 /* EndOfQuarterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EndOfQuarterApp.swift; sourceTree = "<group>"; };
 		BB00000000000000000000012 /* QuarterModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuarterModel.swift; sourceTree = "<group>"; };
 		BB00000000000000000000013 /* QuarterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuarterView.swift; sourceTree = "<group>"; };
@@ -32,7 +32,7 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		BB00000000000000000000030 /* MainGroup */ = {
+		BB00000000000000000000030 = {
 			isa = PBXGroup;
 			children = (
 				BB00000000000000000000031 /* EndOfQuarterCountdown */,
@@ -54,7 +54,7 @@
 		BB00000000000000000000032 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				BB00000000000000000000010 /* EndOfQuarterCountdown.app */,
+				BB00000000000000000000010 /* End of Quarter Countdown.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -76,7 +76,7 @@
 			);
 			name = EndOfQuarterCountdown;
 			productName = EndOfQuarterCountdown;
-			productReference = BB00000000000000000000010 /* EndOfQuarterCountdown.app */;
+			productReference = BB00000000000000000000010 /* End of Quarter Countdown.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -227,7 +227,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_LSUIElement = YES;
@@ -237,12 +237,12 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.endofquartercountdown;
 				PRODUCT_NAME = "End of Quarter Countdown";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				MACOSX_DEPLOYMENT_TARGET = 13.0;
 			};
 			name = Debug;
 		};
@@ -253,7 +253,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_LSUIElement = YES;
@@ -263,27 +263,18 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.endofquartercountdown;
 				PRODUCT_NAME = "End of Quarter Countdown";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				MACOSX_DEPLOYMENT_TARGET = 13.0;
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		BB00000000000000000000061 /* Build configuration list for PBXProject "EndOfQuarterCountdown" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				BB00000000000000000000070 /* Debug */,
-				BB00000000000000000000071 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		BB00000000000000000000050 /* Build configuration list for PBXNativeTarget "EndOfQuarterCountdown" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -293,8 +284,16 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		BB00000000000000000000061 /* Build configuration list for PBXProject "EndOfQuarterCountdown" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BB00000000000000000000070 /* Debug */,
+				BB00000000000000000000071 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
-
 	};
 	rootObject = BB00000000000000000000060 /* Project object */;
 }
