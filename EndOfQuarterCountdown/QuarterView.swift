@@ -79,6 +79,9 @@ struct QuarterView: View {
 
     private var footer: some View {
         HStack {
+            Text(appVersion)
+                .font(.caption)
+                .foregroundColor(Color.secondary.opacity(0.6))
             Spacer()
             Button("Quit") { NSApplication.shared.terminate(nil) }
                 .buttonStyle(.plain)
@@ -87,6 +90,12 @@ struct QuarterView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
+    }
+
+    private var appVersion: String {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
+        let build   = Bundle.main.infoDictionary?["CFBundleVersion"]            as? String ?? "?"
+        return "v\(version) (\(build))"
     }
 
     // MARK: - Helpers
