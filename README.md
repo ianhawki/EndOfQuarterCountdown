@@ -22,7 +22,7 @@ A lightweight macOS menu bar app that counts down to the end of your current fin
 
 1. Clone the repository
    ```bash
-   git clone https://github.com/YOUR_USERNAME/EndOfQuarterCountdown.git
+   git clone https://github.com/ianhawki/EndOfQuarterCountdown.git
    ```
 2. Open `EndOfQuarterCountdown.xcodeproj` in Xcode
 3. In the **Signing & Capabilities** tab, set the Team to your Apple ID
