@@ -10,11 +10,13 @@ struct EndOfQuarterApp: App {
                 .environmentObject(model)
         } label: {
             HStack(spacing: 4) {
-                Image(systemName: "calendar")
+                Image(systemName: model.shouldWarnNextFY ? "exclamationmark.triangle.fill" : "calendar")
+                    .foregroundColor(model.shouldWarnNextFY ? .orange : .primary)
                 Text(model.financialYear.isEmpty
                      ? "Q\(model.currentDisplayQuarter) · \(model.daysRemaining)d"
                      : "\(model.financialYear) Q\(model.currentDisplayQuarter) · \(model.daysRemaining)d")
                     .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundColor(model.shouldWarnNextFY ? .orange : .primary)
             }
         }
         .menuBarExtraStyle(.window)
