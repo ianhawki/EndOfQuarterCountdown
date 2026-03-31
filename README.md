@@ -45,12 +45,13 @@ A lightweight macOS menu bar app that counts down to the end of your current fin
 
 The app defaults to `https://hawkinsmultimedia.com.au/endofquarter.html`. Any URL can be used as long as the page contains dates in this format:
 ```
+FY26
 Q1 : 25/10/2025
 Q2 : 24/01/2026
 Q3 : 25/04/2026
 Q4 : 25/07/2026
 ```
-The URL is saved to UserDefaults and remembered between launches.
+The first line (`FY26`) is optional — if present it is shown as a badge in the popup header and included in the menu bar label (e.g. `FY26 Q2 · 45d`). The URL is saved to UserDefaults and remembered between launches.
 
 ## Project Structure
 

@@ -16,6 +16,7 @@ class QuarterModel: ObservableObject {
     @Published var isFetching = false
     @Published var fetchError: String? = nil
     @Published var lastFetched: Date? = nil
+    @Published var financialYear: String = ""
     @Published var feedURLString: String {
         didSet { UserDefaults.standard.set(feedURLString, forKey: "feedURL") }
     }
@@ -31,7 +32,8 @@ class QuarterModel: ObservableObject {
         q2End = (defaults.object(forKey: "q2End") as? Date) ?? Self.date(month: 6,  day: 30, year: year)
         q3End = (defaults.object(forKey: "q3End") as? Date) ?? Self.date(month: 9,  day: 30, year: year)
         q4End = (defaults.object(forKey: "q4End") as? Date) ?? Self.date(month: 12, day: 31, year: year)
-        feedURLString = defaults.string(forKey: "feedURL") ?? Self.defaultFeedURL
+        feedURLString  = defaults.string(forKey: "feedURL")        ?? Self.defaultFeedURL
+        financialYear  = defaults.string(forKey: "financialYear") ?? ""
 
         if let saved = defaults.object(forKey: "lastFetched") as? Date {
             lastFetched = saved
@@ -64,13 +66,21 @@ class QuarterModel: ObservableObject {
                 return
             }
 
+            // Parse financial year (e.g. "FY26")
+            let fyRegex = try NSRegularExpression(pattern: "(FY\\d+)")
+            if let fyMatch = fyRegex.firstMatch(in: html, range: NSRange(html.startIndex..., in: html)),
+               let fyRange = Range(fyMatch.range(at: 1), in: html) {
+                financialYear = String(html[fyRange])
+                UserDefaults.standard.set(financialYear, forKey: "financialYear")
+            }
+
+            // Parse quarter dates (e.g. "Q1 : 25/10/2025")
             let formatter = DateFormatter()
             formatter.dateFormat = "dd/MM/yyyy"
             formatter.locale = Locale(identifier: "en_AU")
 
-            let pattern = "Q(\\d)\\s*:\\s*(\\d{2}/\\d{2}/\\d{4})"
-            let regex = try NSRegularExpression(pattern: pattern)
-            let matches = regex.matches(in: html, range: NSRange(html.startIndex..., in: html))
+            let qRegex = try NSRegularExpression(pattern: "Q(\\d)\\s*:\\s*(\\d{2}/\\d{2}/\\d{4})")
+            let matches = qRegex.matches(in: html, range: NSRange(html.startIndex..., in: html))
 
             guard !matches.isEmpty else {
                 fetchError = "No quarter dates found on page"

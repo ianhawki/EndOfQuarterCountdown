@@ -30,8 +30,19 @@ struct QuarterView: View {
                 .font(.title2)
                 .foregroundColor(.accentColor)
             VStack(alignment: .leading, spacing: 2) {
-                Text("Q\(model.currentQuarter) · End of Quarter")
-                    .font(.headline)
+                HStack(spacing: 6) {
+                    Text("Q\(model.currentQuarter) · End of Quarter")
+                        .font(.headline)
+                    if !model.financialYear.isEmpty {
+                        Text(model.financialYear)
+                            .font(.system(size: 11, weight: .semibold, design: .rounded))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 2)
+                            .background(Color.accentColor)
+                            .cornerRadius(4)
+                    }
+                }
                 Text(formatted(model.currentQuarterEnd))
                     .font(.caption)
                     .foregroundColor(.secondary)
