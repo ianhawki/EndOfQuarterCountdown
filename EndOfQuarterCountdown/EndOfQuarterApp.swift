@@ -12,8 +12,8 @@ struct EndOfQuarterApp: App {
             HStack(spacing: 4) {
                 Image(systemName: "calendar")
                 Text(model.financialYear.isEmpty
-                     ? "Q\(model.currentQuarter) · \(model.daysRemaining)d"
-                     : "\(model.financialYear) Q\(model.currentQuarter) · \(model.daysRemaining)d")
+                     ? "Q\(model.currentDisplayQuarter) · \(model.daysRemaining)d"
+                     : "\(model.financialYear) Q\(model.currentDisplayQuarter) · \(model.daysRemaining)d")
                     .font(.system(size: 13, weight: .bold, design: .rounded))
             }
         }

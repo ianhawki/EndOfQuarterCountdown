@@ -31,7 +31,7 @@ struct QuarterView: View {
                 .foregroundColor(.accentColor)
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
-                    Text("Q\(model.currentQuarter) · End of Quarter")
+                    Text("Q\(model.currentDisplayQuarter) · End of Quarter")
                         .font(.headline)
                     if !model.financialYear.isEmpty {
                         Text(model.financialYear)
@@ -157,13 +157,15 @@ struct QuarterView: View {
 
             Divider()
 
-            QuarterRow(label: "Q1", date: $model.q1End, isCurrent: model.currentQuarter == 1)
+            QuarterRow(label: rowLabel(1), date: $model.q1End, isCurrent: model.currentQuarter == 1)
             Divider().padding(.leading, 44)
-            QuarterRow(label: "Q2", date: $model.q2End, isCurrent: model.currentQuarter == 2)
+            QuarterRow(label: rowLabel(2), date: $model.q2End, isCurrent: model.currentQuarter == 2)
             Divider().padding(.leading, 44)
-            QuarterRow(label: "Q3", date: $model.q3End, isCurrent: model.currentQuarter == 3)
+            QuarterRow(label: rowLabel(3), date: $model.q3End, isCurrent: model.currentQuarter == 3)
             Divider().padding(.leading, 44)
-            QuarterRow(label: "Q4", date: $model.q4End, isCurrent: model.currentQuarter == 4)
+            QuarterRow(label: rowLabel(4), date: $model.q4End, isCurrent: model.currentQuarter == 4)
+            Divider().padding(.leading, 44)
+            QuarterRow(label: rowLabel(5), date: $model.q5End, isCurrent: model.currentQuarter == 5)
         }
     }
 
@@ -202,6 +204,13 @@ struct QuarterView: View {
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .abbreviated
         return formatter.localizedString(for: date, relativeTo: Date())
+    }
+
+    /// Build the row label from the stored FY label + quarter display number.
+    private func rowLabel(_ slot: Int) -> String {
+        let fy = model.fyLabel(for: slot)
+        let q  = slot == 5 ? 1 : slot
+        return fy.isEmpty ? "Q\(q)" : "\(fy) Q\(q)"
     }
 
     private func saveURL() {

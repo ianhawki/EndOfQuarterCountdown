@@ -2,48 +2,70 @@ import Foundation
 
 @MainActor
 class QuarterModel: ObservableObject {
+
+    // Five quarter end dates — Q1–Q4 of current FY + Q1 of next FY
     @Published var q1End: Date { didSet { saveComponents(of: q1End, key: "q1c"); update() } }
     @Published var q2End: Date { didSet { saveComponents(of: q2End, key: "q2c"); update() } }
     @Published var q3End: Date { didSet { saveComponents(of: q3End, key: "q3c"); update() } }
     @Published var q4End: Date { didSet { saveComponents(of: q4End, key: "q4c"); update() } }
+    @Published var q5End: Date { didSet { saveComponents(of: q5End, key: "q5c"); update() } }
+
+    // FY label per quarter (e.g. "FY26") — populated from web sync
+    @Published var q1FY: String = ""
+    @Published var q2FY: String = ""
+    @Published var q3FY: String = ""
+    @Published var q4FY: String = ""
+    @Published var q5FY: String = ""
 
     @Published var daysRemaining: Int = 0
     @Published var weeksRemaining: Int = 0
     @Published var currentWeekNumber: Int = 1
+
+    /// 1–5 internally; use currentDisplayQuarter for UI (Q5 shows as Q1 of next FY)
     @Published var currentQuarter: Int = 1
     @Published var currentQuarterEnd: Date = Date()
+
+    /// The FY label for whichever quarter we're currently counting down to
+    @Published var financialYear: String = ""
 
     @Published var isFetching = false
     @Published var fetchError: String? = nil
     @Published var lastFetched: Date? = nil
-    @Published var financialYear: String = ""
     @Published var feedURLString: String {
         didSet { UserDefaults.standard.set(feedURLString, forKey: "feedURL") }
     }
 
-    private static let defaultFeedURL = "https://hawkinsmultimedia.com.au/endofquarter.html"
+    /// Quarter number to show in the UI — Q5 is presented as Q1 of the next FY
+    var currentDisplayQuarter: Int { currentQuarter == 5 ? 1 : currentQuarter }
 
-    /// Prevents save/update loops when update() refreshes q*End from stored components.
+    private static let defaultFeedURL = "https://hawkinsmultimedia.com.au/endofquarter.html"
     private var isSyncingFromComponents = false
     private var timer: Timer?
 
     init() {
-        let defaults = UserDefaults.standard
+        let d = UserDefaults.standard
+        let year = Calendar.current.component(.year, from: Date())
 
-        q1End = Self.loadDate(key: "q1c", fallbackMonth: 3,  fallbackDay: 31)
-        q2End = Self.loadDate(key: "q2c", fallbackMonth: 6,  fallbackDay: 30)
-        q3End = Self.loadDate(key: "q3c", fallbackMonth: 9,  fallbackDay: 30)
-        q4End = Self.loadDate(key: "q4c", fallbackMonth: 12, fallbackDay: 31)
-        feedURLString = defaults.string(forKey: "feedURL")        ?? Self.defaultFeedURL
-        financialYear = defaults.string(forKey: "financialYear") ?? ""
+        q1End = Self.loadDate(key: "q1c", fallbackMonth: 3,  fallbackDay: 31, fallbackYear: year)
+        q2End = Self.loadDate(key: "q2c", fallbackMonth: 6,  fallbackDay: 30, fallbackYear: year)
+        q3End = Self.loadDate(key: "q3c", fallbackMonth: 9,  fallbackDay: 30, fallbackYear: year)
+        q4End = Self.loadDate(key: "q4c", fallbackMonth: 12, fallbackDay: 31, fallbackYear: year)
+        q5End = Self.loadDate(key: "q5c", fallbackMonth: 3,  fallbackDay: 31, fallbackYear: year + 1)
 
-        if let saved = defaults.object(forKey: "lastFetched") as? Date {
-            lastFetched = saved
-        }
+        q1FY = d.string(forKey: "q1FY") ?? ""
+        q2FY = d.string(forKey: "q2FY") ?? ""
+        q3FY = d.string(forKey: "q3FY") ?? ""
+        q4FY = d.string(forKey: "q4FY") ?? ""
+        q5FY = d.string(forKey: "q5FY") ?? ""
+
+        feedURLString = d.string(forKey: "feedURL") ?? Self.defaultFeedURL
+
+        if let saved = d.object(forKey: "lastFetched") as? Date { lastFetched = saved }
 
         update()
 
-        timer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
+        // Check every 10 minutes as a safety net
+        timer = Timer.scheduledTimer(withTimeInterval: 600, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.update() }
         }
 
@@ -61,27 +83,31 @@ class QuarterModel: ObservableObject {
     func update() {
         guard !isSyncingFromComponents else { return }
 
-        // Always rebuild q*End from stored year/month/day components using the
-        // current timezone. This ensures a timezone change never causes the
-        // stored UTC timestamp to land on the wrong calendar day.
+        // Rebuild dates from stored components in the current timezone so
+        // a timezone change never shifts the calendar day.
         isSyncingFromComponents = true
-        q1End = Self.loadDate(key: "q1c", fallbackMonth: 3,  fallbackDay: 31)
-        q2End = Self.loadDate(key: "q2c", fallbackMonth: 6,  fallbackDay: 30)
-        q3End = Self.loadDate(key: "q3c", fallbackMonth: 9,  fallbackDay: 30)
-        q4End = Self.loadDate(key: "q4c", fallbackMonth: 12, fallbackDay: 31)
+        let year = Calendar.current.component(.year, from: Date())
+        q1End = Self.loadDate(key: "q1c", fallbackMonth: 3,  fallbackDay: 31, fallbackYear: year)
+        q2End = Self.loadDate(key: "q2c", fallbackMonth: 6,  fallbackDay: 30, fallbackYear: year)
+        q3End = Self.loadDate(key: "q3c", fallbackMonth: 9,  fallbackDay: 30, fallbackYear: year)
+        q4End = Self.loadDate(key: "q4c", fallbackMonth: 12, fallbackDay: 31, fallbackYear: year)
+        q5End = Self.loadDate(key: "q5c", fallbackMonth: 3,  fallbackDay: 31, fallbackYear: year + 1)
         isSyncingFromComponents = false
 
         let now = Date()
         let cal = Calendar.current
-        let quarters = [(1, q1End), (2, q2End), (3, q3End), (4, q4End)]
+        let quarters = [(1, q1End), (2, q2End), (3, q3End), (4, q4End), (5, q5End)]
 
         if let next = quarters.first(where: { $0.1 > now }) {
             currentQuarter    = next.0
             currentQuarterEnd = next.1
         } else {
-            currentQuarter    = 4
-            currentQuarterEnd = q4End
+            currentQuarter    = 5
+            currentQuarterEnd = q5End
         }
+
+        // Update the FY badge to match whichever quarter we're in
+        financialYear = fyLabel(for: currentQuarter)
 
         let days = cal.dateComponents(
             [.day],
@@ -94,21 +120,34 @@ class QuarterModel: ObservableObject {
         currentWeekNumber = weekNumber(quarterStart: currentQuarterStart, today: now)
     }
 
+    func fyLabel(for quarter: Int) -> String {
+        switch quarter {
+        case 1: return q1FY
+        case 2: return q2FY
+        case 3: return q3FY
+        case 4: return q4FY
+        case 5: return q5FY
+        default: return ""
+        }
+    }
+
     /// The first day of the current quarter (day after the previous quarter ended).
     var currentQuarterStart: Date {
         let cal = Calendar.current
-        func dayAfter(_ d: Date) -> Date { cal.date(byAdding: .day, value: 1, to: cal.startOfDay(for: d))! }
+        func dayAfter(_ d: Date) -> Date {
+            cal.date(byAdding: .day, value: 1, to: cal.startOfDay(for: d))!
+        }
         switch currentQuarter {
         case 2: return dayAfter(q1End)
         case 3: return dayAfter(q2End)
         case 4: return dayAfter(q3End)
-        default:
+        case 5: return dayAfter(q4End)
+        default: // Q1 — approximate from Q4 end one year prior
             let prevQ4End = cal.date(byAdding: .year, value: -1, to: q4End) ?? q4End
             return dayAfter(prevQ4End)
         }
     }
 
-    /// Week 1 starts on the first day-of-week on or after the quarter start.
     private func weekNumber(quarterStart: Date, today: Date) -> Int {
         let cal = Calendar.current
         let qDay     = cal.startOfDay(for: quarterStart)
@@ -145,15 +184,10 @@ class QuarterModel: ObservableObject {
                 return
             }
 
-            let fyRegex = try NSRegularExpression(pattern: "(FY\\d+)")
-            if let fyMatch = fyRegex.firstMatch(in: html, range: NSRange(html.startIndex..., in: html)),
-               let fyRange = Range(fyMatch.range(at: 1), in: html) {
-                financialYear = String(html[fyRange])
-                UserDefaults.standard.set(financialYear, forKey: "financialYear")
-            }
-
-            let qRegex = try NSRegularExpression(pattern: "Q(\\d)\\s*:\\s*(\\d{2})/(\\d{2})/(\\d{4})")
-            let matches = qRegex.matches(in: html, range: NSRange(html.startIndex..., in: html))
+            // Format: FY26Q1 : 25/10/2025
+            let pattern = "(FY\\d+)Q(\\d)\\s*:\\s*(\\d{2})/(\\d{2})/(\\d{4})"
+            let regex = try NSRegularExpression(pattern: pattern)
+            let matches = regex.matches(in: html, range: NSRange(html.startIndex..., in: html))
 
             guard !matches.isEmpty else {
                 fetchError = "No quarter dates found on page"
@@ -161,25 +195,31 @@ class QuarterModel: ObservableObject {
                 return
             }
 
+            // Collect all entries then assign in order
+            var entries: [(fy: String, quarter: Int, date: Date)] = []
+
             for match in matches {
-                guard let qRange    = Range(match.range(at: 1), in: html),
-                      let ddRange   = Range(match.range(at: 2), in: html),
-                      let mmRange   = Range(match.range(at: 3), in: html),
-                      let yyyyRange = Range(match.range(at: 4), in: html),
+                guard let fyRange   = Range(match.range(at: 1), in: html),
+                      let qRange    = Range(match.range(at: 2), in: html),
+                      let ddRange   = Range(match.range(at: 3), in: html),
+                      let mmRange   = Range(match.range(at: 4), in: html),
+                      let yyyyRange = Range(match.range(at: 5), in: html),
                       let quarter   = Int(html[qRange]),
                       let day       = Int(html[ddRange]),
                       let month     = Int(html[mmRange]),
                       let year      = Int(html[yyyyRange]) else { continue }
 
+                let fy   = String(html[fyRange])
                 let date = Self.makeDate(year: year, month: month, day: day)
-                switch quarter {
-                case 1: q1End = date
-                case 2: q2End = date
-                case 3: q3End = date
-                case 4: q4End = date
-                default: break
-                }
+                entries.append((fy: fy, quarter: quarter, date: date))
             }
+
+            // Assign the first four entries to Q1–Q4, the fifth to Q5 (next FY Q1)
+            if entries.count > 0 { q1End = entries[0].date; q1FY = entries[0].fy; UserDefaults.standard.set(q1FY, forKey: "q1FY") }
+            if entries.count > 1 { q2End = entries[1].date; q2FY = entries[1].fy; UserDefaults.standard.set(q2FY, forKey: "q2FY") }
+            if entries.count > 2 { q3End = entries[2].date; q3FY = entries[2].fy; UserDefaults.standard.set(q3FY, forKey: "q3FY") }
+            if entries.count > 3 { q4End = entries[3].date; q4FY = entries[3].fy; UserDefaults.standard.set(q4FY, forKey: "q4FY") }
+            if entries.count > 4 { q5End = entries[4].date; q5FY = entries[4].fy; UserDefaults.standard.set(q5FY, forKey: "q5FY") }
 
             lastFetched = Date()
             UserDefaults.standard.set(lastFetched, forKey: "lastFetched")
@@ -200,13 +240,12 @@ class QuarterModel: ObservableObject {
         UserDefaults.standard.set(["y": y, "m": m, "d": d], forKey: key)
     }
 
-    private static func loadDate(key: String, fallbackMonth: Int, fallbackDay: Int) -> Date {
+    private static func loadDate(key: String, fallbackMonth: Int, fallbackDay: Int, fallbackYear: Int) -> Date {
         if let dict = UserDefaults.standard.dictionary(forKey: key) as? [String: Int],
            let y = dict["y"], let m = dict["m"], let d = dict["d"] {
             return makeDate(year: y, month: m, day: d)
         }
-        let year = Calendar.current.component(.year, from: Date())
-        return makeDate(year: year, month: fallbackMonth, day: fallbackDay)
+        return makeDate(year: fallbackYear, month: fallbackMonth, day: fallbackDay)
     }
 
     static func makeDate(year: Int, month: Int, day: Int) -> Date {
