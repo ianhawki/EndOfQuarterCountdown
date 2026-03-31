@@ -234,6 +234,12 @@ struct QuarterView: View {
                 Text(appVersion)
                     .font(.caption)
                     .foregroundColor(Color.secondary.opacity(0.6))
+                Text("by")
+                    .font(.caption)
+                    .foregroundColor(Color.secondary.opacity(0.6))
+                Link("Ian Hawkins", destination: URL(string: "mailto:ian@hawkinsmultimedia.net")!)
+                    .font(.caption)
+                    .foregroundColor(.accentColor)
                 Spacer()
                 Button("Quit") { NSApplication.shared.terminate(nil) }
                     .buttonStyle(.plain)

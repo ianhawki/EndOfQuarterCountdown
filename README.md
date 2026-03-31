@@ -76,6 +76,10 @@ EndOfQuarterCountdown/
 └── QuarterView.swift         # Popup UI, date editor, sync status, new FY warning banner
 ```
 
+## Author
+
+Built by [Ian Hawkins](mailto:ian@hawkinsmultimedia.net)
+
 ## Contributing
 
 Pull requests are welcome. For larger changes please open an issue first to discuss what you'd like to change.
