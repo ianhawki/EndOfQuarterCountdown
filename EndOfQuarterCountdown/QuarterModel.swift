@@ -38,6 +38,9 @@ class QuarterModel: ObservableObject {
     /// Quarter number to show in the UI — Q5 is presented as Q1 of the next FY
     var currentDisplayQuarter: Int { currentQuarter == 5 ? 1 : currentQuarter }
 
+    /// True when counting down to the final stored quarter (next FY Q1) with fewer than 70 days left
+    var shouldWarnNextFY: Bool { currentQuarter == 5 && daysRemaining < 70 }
+
     private static let defaultFeedURL = "https://hawkinsmultimedia.com.au/endofquarter.html"
     private var isSyncingFromComponents = false
     private var timer: Timer?

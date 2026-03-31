@@ -12,6 +12,11 @@ struct QuarterView: View {
             countdown
             Divider()
 
+            if model.shouldWarnNextFY {
+                nextFYWarning
+                Divider()
+            }
+
             if showingEditor {
                 quarterEditor
                 Divider()
@@ -95,6 +100,45 @@ struct QuarterView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
+    }
+
+    private var nextFYWarning: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundColor(.orange)
+                Text("New FY dates needed")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.orange)
+            }
+            Text("Fewer than 70 days until \(model.financialYear) Q1 ends. Sync or update your quarter dates to keep the countdown accurate.")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            HStack(spacing: 8) {
+                Button {
+                    Task { await model.fetchDates() }
+                } label: {
+                    Label("Sync Now", systemImage: "arrow.clockwise.icloud")
+                        .font(.caption)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.orange)
+                .disabled(model.isFetching)
+
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) { showingEditor = true }
+                } label: {
+                    Label("Edit Dates", systemImage: "slider.horizontal.3")
+                        .font(.caption)
+                }
+                .buttonStyle(.bordered)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.orange.opacity(0.07))
     }
 
     private var quarterEditor: some View {
