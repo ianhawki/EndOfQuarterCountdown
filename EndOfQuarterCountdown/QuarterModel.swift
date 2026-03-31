@@ -23,6 +23,8 @@ class QuarterModel: ObservableObject {
 
     private static let defaultFeedURL = "https://hawkinsmultimedia.com.au/endofquarter.html"
 
+    /// Prevents save/update loops when update() refreshes q*End from stored components.
+    private var isSyncingFromComponents = false
     private var timer: Timer?
 
     init() {
@@ -32,8 +34,8 @@ class QuarterModel: ObservableObject {
         q2End = Self.loadDate(key: "q2c", fallbackMonth: 6,  fallbackDay: 30)
         q3End = Self.loadDate(key: "q3c", fallbackMonth: 9,  fallbackDay: 30)
         q4End = Self.loadDate(key: "q4c", fallbackMonth: 12, fallbackDay: 31)
-        feedURLString  = defaults.string(forKey: "feedURL")        ?? Self.defaultFeedURL
-        financialYear  = defaults.string(forKey: "financialYear") ?? ""
+        feedURLString = defaults.string(forKey: "feedURL")        ?? Self.defaultFeedURL
+        financialYear = defaults.string(forKey: "financialYear") ?? ""
 
         if let saved = defaults.object(forKey: "lastFetched") as? Date {
             lastFetched = saved
@@ -41,12 +43,10 @@ class QuarterModel: ObservableObject {
 
         update()
 
-        // Recalculate every minute
         timer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.update() }
         }
 
-        // Recalculate countdown when the system timezone changes
         NotificationCenter.default.addObserver(
             forName: Notification.Name("NSSystemTimeZoneDidChangeNotification"),
             object: nil,
@@ -54,6 +54,74 @@ class QuarterModel: ObservableObject {
         ) { [weak self] _ in
             Task { @MainActor in self?.update() }
         }
+    }
+
+    // MARK: - Countdown
+
+    func update() {
+        guard !isSyncingFromComponents else { return }
+
+        // Always rebuild q*End from stored year/month/day components using the
+        // current timezone. This ensures a timezone change never causes the
+        // stored UTC timestamp to land on the wrong calendar day.
+        isSyncingFromComponents = true
+        q1End = Self.loadDate(key: "q1c", fallbackMonth: 3,  fallbackDay: 31)
+        q2End = Self.loadDate(key: "q2c", fallbackMonth: 6,  fallbackDay: 30)
+        q3End = Self.loadDate(key: "q3c", fallbackMonth: 9,  fallbackDay: 30)
+        q4End = Self.loadDate(key: "q4c", fallbackMonth: 12, fallbackDay: 31)
+        isSyncingFromComponents = false
+
+        let now = Date()
+        let cal = Calendar.current
+        let quarters = [(1, q1End), (2, q2End), (3, q3End), (4, q4End)]
+
+        if let next = quarters.first(where: { $0.1 > now }) {
+            currentQuarter    = next.0
+            currentQuarterEnd = next.1
+        } else {
+            currentQuarter    = 4
+            currentQuarterEnd = q4End
+        }
+
+        let days = cal.dateComponents(
+            [.day],
+            from: cal.startOfDay(for: now),
+            to: cal.startOfDay(for: currentQuarterEnd)
+        ).day ?? 0
+
+        daysRemaining     = max(0, days)
+        weeksRemaining    = max(0, daysRemaining / 7)
+        currentWeekNumber = weekNumber(quarterStart: currentQuarterStart, today: now)
+    }
+
+    /// The first day of the current quarter (day after the previous quarter ended).
+    var currentQuarterStart: Date {
+        let cal = Calendar.current
+        func dayAfter(_ d: Date) -> Date { cal.date(byAdding: .day, value: 1, to: cal.startOfDay(for: d))! }
+        switch currentQuarter {
+        case 2: return dayAfter(q1End)
+        case 3: return dayAfter(q2End)
+        case 4: return dayAfter(q3End)
+        default:
+            let prevQ4End = cal.date(byAdding: .year, value: -1, to: q4End) ?? q4End
+            return dayAfter(prevQ4End)
+        }
+    }
+
+    /// Week 1 starts on the first day-of-week on or after the quarter start.
+    private func weekNumber(quarterStart: Date, today: Date) -> Int {
+        let cal = Calendar.current
+        let qDay     = cal.startOfDay(for: quarterStart)
+        let todayDay = cal.startOfDay(for: today)
+
+        let qWeekday    = cal.component(.weekday, from: qDay)
+        let daysToWeek1 = (cal.firstWeekday - qWeekday + 7) % 7
+
+        guard let week1Start = cal.date(byAdding: .day, value: daysToWeek1, to: qDay) else { return 1 }
+        if todayDay < week1Start { return 0 }
+
+        let elapsed = cal.dateComponents([.day], from: week1Start, to: todayDay).day ?? 0
+        return elapsed / 7 + 1
     }
 
     // MARK: - Web Fetch
@@ -77,7 +145,6 @@ class QuarterModel: ObservableObject {
                 return
             }
 
-            // Parse financial year (e.g. "FY26")
             let fyRegex = try NSRegularExpression(pattern: "(FY\\d+)")
             if let fyMatch = fyRegex.firstMatch(in: html, range: NSRange(html.startIndex..., in: html)),
                let fyRange = Range(fyMatch.range(at: 1), in: html) {
@@ -85,7 +152,6 @@ class QuarterModel: ObservableObject {
                 UserDefaults.standard.set(financialYear, forKey: "financialYear")
             }
 
-            // Parse quarter dates — extract raw day/month/year, no DateFormatter to avoid timezone offset
             let qRegex = try NSRegularExpression(pattern: "Q(\\d)\\s*:\\s*(\\d{2})/(\\d{2})/(\\d{4})")
             let matches = qRegex.matches(in: html, range: NSRange(html.startIndex..., in: html))
 
@@ -96,14 +162,14 @@ class QuarterModel: ObservableObject {
             }
 
             for match in matches {
-                guard let qRange  = Range(match.range(at: 1), in: html),
-                      let ddRange = Range(match.range(at: 2), in: html),
-                      let mmRange = Range(match.range(at: 3), in: html),
+                guard let qRange    = Range(match.range(at: 1), in: html),
+                      let ddRange   = Range(match.range(at: 2), in: html),
+                      let mmRange   = Range(match.range(at: 3), in: html),
                       let yyyyRange = Range(match.range(at: 4), in: html),
-                      let quarter = Int(html[qRange]),
-                      let day     = Int(html[ddRange]),
-                      let month   = Int(html[mmRange]),
-                      let year    = Int(html[yyyyRange]) else { continue }
+                      let quarter   = Int(html[qRange]),
+                      let day       = Int(html[ddRange]),
+                      let month     = Int(html[mmRange]),
+                      let year      = Int(html[yyyyRange]) else { continue }
 
                 let date = Self.makeDate(year: year, month: month, day: day)
                 switch quarter {
@@ -125,63 +191,10 @@ class QuarterModel: ObservableObject {
         isFetching = false
     }
 
-    // MARK: - Countdown
-
-    func update() {
-        let now = Date()
-        let cal = Calendar.current
-        let quarters = [(1, q1End), (2, q2End), (3, q3End), (4, q4End)]
-
-        if let next = quarters.first(where: { $0.1 > now }) {
-            currentQuarter    = next.0
-            currentQuarterEnd = next.1
-        } else {
-            currentQuarter    = 4
-            currentQuarterEnd = q4End
-        }
-
-        let days = cal.dateComponents([.day], from: cal.startOfDay(for: now), to: cal.startOfDay(for: currentQuarterEnd)).day ?? 0
-        daysRemaining    = max(0, days)
-        weeksRemaining   = max(0, daysRemaining / 7)
-        currentWeekNumber = weekNumber(quarterStart: currentQuarterStart, today: now)
-    }
-
-    /// The first day of the current quarter (day after the previous quarter ended).
-    var currentQuarterStart: Date {
-        let cal = Calendar.current
-        func dayAfter(_ d: Date) -> Date { cal.date(byAdding: .day, value: 1, to: cal.startOfDay(for: d))! }
-        switch currentQuarter {
-        case 2: return dayAfter(q1End)
-        case 3: return dayAfter(q2End)
-        case 4: return dayAfter(q3End)
-        default: // Q1 — approximate from Q4 end one year prior
-            let prevQ4End = cal.date(byAdding: .year, value: -1, to: q4End) ?? q4End
-            return dayAfter(prevQ4End)
-        }
-    }
-
-    /// Week 1 starts on the first day-of-week on or after the quarter start.
-    /// Days before Week 1 are a partial opening period (returned as week 0).
-    private func weekNumber(quarterStart: Date, today: Date) -> Int {
-        let cal = Calendar.current
-        let qDay   = cal.startOfDay(for: quarterStart)
-        let todayDay = cal.startOfDay(for: today)
-
-        let qWeekday   = cal.component(.weekday, from: qDay)
-        let firstWeekday = cal.firstWeekday
-        let daysToWeek1  = (firstWeekday - qWeekday + 7) % 7
-
-        guard let week1Start = cal.date(byAdding: .day, value: daysToWeek1, to: qDay) else { return 1 }
-
-        if todayDay < week1Start { return 0 }
-
-        let elapsed = cal.dateComponents([.day], from: week1Start, to: todayDay).day ?? 0
-        return elapsed / 7 + 1
-    }
-
-    // MARK: - Storage (components, not Date objects)
+    // MARK: - Storage
 
     private func saveComponents(of date: Date, key: String) {
+        guard !isSyncingFromComponents else { return }
         let comps = Calendar.current.dateComponents([.year, .month, .day], from: date)
         guard let y = comps.year, let m = comps.month, let d = comps.day else { return }
         UserDefaults.standard.set(["y": y, "m": m, "d": d], forKey: key)
@@ -196,7 +209,6 @@ class QuarterModel: ObservableObject {
         return makeDate(year: year, month: fallbackMonth, day: fallbackDay)
     }
 
-    /// Builds a Date for end-of-day in the current local timezone — no timezone offsets applied.
     static func makeDate(year: Int, month: Int, day: Int) -> Date {
         var c = DateComponents()
         c.year = year; c.month = month; c.day = day
