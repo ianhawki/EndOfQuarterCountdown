@@ -19,7 +19,7 @@ struct QuarterView: View {
 
             footer
         }
-        .frame(width: 300)
+        .frame(width: 340)
     }
 
     // MARK: - Sections
@@ -240,9 +240,10 @@ struct QuarterRow: View {
     var body: some View {
         HStack(spacing: 10) {
             Text(label)
-                .font(.system(size: 13, weight: isCurrent ? .bold : .regular, design: .rounded))
+                .font(.system(size: 12, weight: isCurrent ? .bold : .regular, design: .rounded))
                 .foregroundColor(isCurrent ? .accentColor : .secondary)
-                .frame(width: 28, alignment: .center)
+                .lineLimit(1)
+                .frame(width: 72, alignment: .leading)
                 .padding(.vertical, 2)
                 .padding(.horizontal, 4)
                 .background(isCurrent ? Color.accentColor.opacity(0.12) : Color.clear)
