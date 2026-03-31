@@ -23,8 +23,6 @@ class QuarterModel: ObservableObject {
 
     private static let defaultFeedURL = "https://hawkinsmultimedia.com.au/endofquarter.html"
 
-    // Suppresses saves while rebuilding after a timezone change
-    private var isRebuilding = false
     private var timer: Timer?
 
     init() {
@@ -48,27 +46,14 @@ class QuarterModel: ObservableObject {
             Task { @MainActor in self?.update() }
         }
 
-        // Rebuild dates when the system timezone changes
+        // Recalculate countdown when the system timezone changes
         NotificationCenter.default.addObserver(
             forName: Notification.Name("NSSystemTimeZoneDidChangeNotification"),
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            Task { @MainActor in self?.rebuildDatesFromComponents() }
+            Task { @MainActor in self?.update() }
         }
-    }
-
-    // MARK: - Timezone rebuild
-
-    /// Reload all four dates from stored components using the new current timezone.
-    private func rebuildDatesFromComponents() {
-        isRebuilding = true
-        q1End = Self.loadDate(key: "q1c", fallbackMonth: 3,  fallbackDay: 31)
-        q2End = Self.loadDate(key: "q2c", fallbackMonth: 6,  fallbackDay: 30)
-        q3End = Self.loadDate(key: "q3c", fallbackMonth: 9,  fallbackDay: 30)
-        q4End = Self.loadDate(key: "q4c", fallbackMonth: 12, fallbackDay: 31)
-        isRebuilding = false
-        update()
     }
 
     // MARK: - Web Fetch
@@ -197,7 +182,6 @@ class QuarterModel: ObservableObject {
     // MARK: - Storage (components, not Date objects)
 
     private func saveComponents(of date: Date, key: String) {
-        guard !isRebuilding else { return }
         let comps = Calendar.current.dateComponents([.year, .month, .day], from: date)
         guard let y = comps.year, let m = comps.month, let d = comps.day else { return }
         UserDefaults.standard.set(["y": y, "m": m, "d": d], forKey: key)
