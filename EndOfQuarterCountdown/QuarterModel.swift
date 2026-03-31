@@ -8,8 +8,8 @@ class QuarterModel: ObservableObject {
     @Published var q4End: Date { didSet { saveComponents(of: q4End, key: "q4c"); update() } }
 
     @Published var daysRemaining: Int = 0
-    @Published var hoursRemaining: Int = 0
-    @Published var minutesRemaining: Int = 0
+    @Published var weeksRemaining: Int = 0
+    @Published var currentWeekNumber: Int = 1
     @Published var currentQuarter: Int = 1
     @Published var currentQuarterEnd: Date = Date()
 
@@ -144,6 +144,7 @@ class QuarterModel: ObservableObject {
 
     func update() {
         let now = Date()
+        let cal = Calendar.current
         let quarters = [(1, q1End), (2, q2End), (3, q3End), (4, q4End)]
 
         if let next = quarters.first(where: { $0.1 > now }) {
@@ -154,10 +155,43 @@ class QuarterModel: ObservableObject {
             currentQuarterEnd = q4End
         }
 
-        let components = Calendar.current.dateComponents([.day, .hour, .minute], from: now, to: currentQuarterEnd)
-        daysRemaining    = max(0, components.day    ?? 0)
-        hoursRemaining   = max(0, components.hour   ?? 0)
-        minutesRemaining = max(0, components.minute ?? 0)
+        let days = cal.dateComponents([.day], from: cal.startOfDay(for: now), to: cal.startOfDay(for: currentQuarterEnd)).day ?? 0
+        daysRemaining    = max(0, days)
+        weeksRemaining   = max(0, daysRemaining / 7)
+        currentWeekNumber = weekNumber(quarterStart: currentQuarterStart, today: now)
+    }
+
+    /// The first day of the current quarter (day after the previous quarter ended).
+    var currentQuarterStart: Date {
+        let cal = Calendar.current
+        func dayAfter(_ d: Date) -> Date { cal.date(byAdding: .day, value: 1, to: cal.startOfDay(for: d))! }
+        switch currentQuarter {
+        case 2: return dayAfter(q1End)
+        case 3: return dayAfter(q2End)
+        case 4: return dayAfter(q3End)
+        default: // Q1 — approximate from Q4 end one year prior
+            let prevQ4End = cal.date(byAdding: .year, value: -1, to: q4End) ?? q4End
+            return dayAfter(prevQ4End)
+        }
+    }
+
+    /// Week 1 starts on the first day-of-week on or after the quarter start.
+    /// Days before Week 1 are a partial opening period (returned as week 0).
+    private func weekNumber(quarterStart: Date, today: Date) -> Int {
+        let cal = Calendar.current
+        let qDay   = cal.startOfDay(for: quarterStart)
+        let todayDay = cal.startOfDay(for: today)
+
+        let qWeekday   = cal.component(.weekday, from: qDay)
+        let firstWeekday = cal.firstWeekday
+        let daysToWeek1  = (firstWeekday - qWeekday + 7) % 7
+
+        guard let week1Start = cal.date(byAdding: .day, value: daysToWeek1, to: qDay) else { return 1 }
+
+        if todayDay < week1Start { return 0 }
+
+        let elapsed = cal.dateComponents([.day], from: week1Start, to: todayDay).day ?? 0
+        return elapsed / 7 + 1
     }
 
     // MARK: - Storage (components, not Date objects)

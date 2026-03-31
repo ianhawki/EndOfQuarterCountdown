@@ -89,9 +89,9 @@ struct QuarterView: View {
         HStack(spacing: 8) {
             CountdownUnit(value: model.daysRemaining,    label: "DAYS")
             separator
-            CountdownUnit(value: model.hoursRemaining,   label: "HRS")
+            CountdownUnit(value: model.currentWeekNumber, label: "WEEK")
             separator
-            CountdownUnit(value: model.minutesRemaining, label: "MIN")
+            CountdownUnit(value: model.weeksRemaining,   label: "WKS LEFT")
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
