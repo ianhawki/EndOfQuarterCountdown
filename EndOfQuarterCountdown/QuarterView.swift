@@ -19,7 +19,6 @@ struct QuarterView: View {
 
             if showingEditor {
                 quarterEditor
-                Divider()
             }
 
             footer
@@ -214,18 +213,36 @@ struct QuarterView: View {
     }
 
     private var footer: some View {
-        HStack {
-            Text(appVersion)
+        VStack(spacing: 0) {
+            Divider()
+            HStack {
+                Toggle("Launch at Login", isOn: Binding(
+                    get: { model.launchAtLogin },
+                    set: { model.setLaunchAtLogin($0) }
+                ))
+                .toggleStyle(.checkbox)
                 .font(.caption)
-                .foregroundColor(Color.secondary.opacity(0.6))
-            Spacer()
-            Button("Quit") { NSApplication.shared.terminate(nil) }
-                .buttonStyle(.plain)
                 .foregroundColor(.secondary)
-                .font(.caption)
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 6)
+
+            Divider()
+
+            HStack {
+                Text(appVersion)
+                    .font(.caption)
+                    .foregroundColor(Color.secondary.opacity(0.6))
+                Spacer()
+                Button("Quit") { NSApplication.shared.terminate(nil) }
+                    .buttonStyle(.plain)
+                    .foregroundColor(.secondary)
+                    .font(.caption)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
     }
 
     // MARK: - Helpers

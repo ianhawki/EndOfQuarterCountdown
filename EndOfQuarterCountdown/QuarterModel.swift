@@ -1,4 +1,5 @@
 import Foundation
+import ServiceManagement
 
 @MainActor
 class QuarterModel: ObservableObject {
@@ -27,6 +28,8 @@ class QuarterModel: ObservableObject {
 
     /// The FY label for whichever quarter we're currently counting down to
     @Published var financialYear: String = ""
+
+    @Published var launchAtLogin: Bool = false
 
     @Published var isFetching = false
     @Published var fetchError: String? = nil
@@ -64,6 +67,8 @@ class QuarterModel: ObservableObject {
         feedURLString = d.string(forKey: "feedURL") ?? Self.defaultFeedURL
 
         if let saved = d.object(forKey: "lastFetched") as? Date { lastFetched = saved }
+
+        launchAtLogin = SMAppService.mainApp.status == .enabled
 
         update()
 
@@ -256,6 +261,21 @@ class QuarterModel: ObservableObject {
         c.year = year; c.month = month; c.day = day
         c.hour = 23; c.minute = 59; c.second = 59
         return Calendar.current.date(from: c) ?? Date()
+    }
+
+    // MARK: - Launch at Login
+
+    func setLaunchAtLogin(_ enabled: Bool) {
+        do {
+            if enabled {
+                try SMAppService.mainApp.register()
+            } else {
+                try SMAppService.mainApp.unregister()
+            }
+        } catch {
+            print("Launch at login error: \(error.localizedDescription)")
+        }
+        launchAtLogin = SMAppService.mainApp.status == .enabled
     }
 
     deinit { timer?.invalidate() }
