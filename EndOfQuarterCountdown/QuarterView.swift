@@ -126,10 +126,10 @@ struct QuarterView: View {
             // Big number + unit
             HStack(alignment: .lastTextBaseline, spacing: 5) {
                 Text("\(model.daysRemaining)")
-                    .font(.system(size: 80, weight: .bold, design: .rounded))
+                    .font(.system(size: 160, weight: .bold, design: .rounded))
                     .foregroundStyle(blueGradient)
                     .monospacedDigit()
-                    .minimumScaleFactor(0.5)
+                    .minimumScaleFactor(0.3)
                     .lineLimit(1)
 
                 Text(model.daysRemaining == 1 ? "DAY" : "DAYS")
@@ -203,14 +203,16 @@ struct QuarterView: View {
     private var infoCards: some View {
         HStack(spacing: 10) {
             infoCard(
-                title: "NEXT MILESTONE",
-                value: "\(model.financialYear) Q\(model.currentDisplayQuarter) End",
-                sub: "In \(model.daysRemaining) \(model.daysRemaining == 1 ? "day" : "days")"
+                title: "WEEK NUMBER",
+                value: "Week \(model.currentWeekNumber)",
+                sub: "of current quarter"
             )
             infoCard(
-                title: "ACCURACY",
-                value: model.lastFetched != nil ? "Web Sync" : "Manual",
-                sub: syncSubLabel
+                title: "FY END DATE",
+                value: fyEndFormatted,
+                sub: daysUntilFYEnd > 0
+                    ? "\(daysUntilFYEnd) \(daysUntilFYEnd == 1 ? "day" : "days") remaining"
+                    : "FY complete"
             )
         }
         .padding(.horizontal, 16)
@@ -385,7 +387,8 @@ struct QuarterView: View {
                 .cornerRadius(5)
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 10)
+        .padding(.top, 10)
+        .padding(.bottom, 20)
     }
 
     // MARK: Computed helpers ───────────────────────────────────────────────────
@@ -420,6 +423,21 @@ struct QuarterView: View {
         if model.fetchError != nil           { return "Sync failed" }
         if let last = model.lastFetched      { return "Synced \(relativeTime(last))" }
         return "Not synced"
+    }
+
+    /// Days from today until the end of FY (Q4 end date)
+    private var daysUntilFYEnd: Int {
+        let cal   = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        let fyEnd = cal.startOfDay(for: model.q4End)
+        return max(0, cal.dateComponents([.day], from: today, to: fyEnd).day ?? 0)
+    }
+
+    /// Short formatted FY end date, e.g. "25 Jul 2026"
+    private var fyEndFormatted: String {
+        let f = DateFormatter()
+        f.dateFormat = "d MMM yyyy"
+        return f.string(from: model.q4End)
     }
 
     private var thinDivider: some View {
