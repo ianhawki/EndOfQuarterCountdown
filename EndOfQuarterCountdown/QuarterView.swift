@@ -85,37 +85,37 @@ struct QuarterView: View {
 
             Spacer()
 
-            // Sync
+            // Sync — frame is on the label so the whole box is the hit area
             Button { Task { await model.fetchDates() } } label: {
                 Group {
                     if model.isFetching {
-                        ProgressView().scaleEffect(0.6).frame(width: 14, height: 14)
+                        ProgressView().scaleEffect(0.6)
                     } else {
                         Image(systemName: "arrow.clockwise.icloud")
                             .font(.system(size: 14))
                             .foregroundColor(DK.sec)
                     }
                 }
+                .frame(width: 28, height: 28)
+                .background(Color.white.opacity(0.07))
+                .cornerRadius(6)
             }
             .buttonStyle(.plain)
             .disabled(model.isFetching)
-            .frame(width: 28, height: 28)
-            .background(Color.white.opacity(0.07))
-            .cornerRadius(6)
             .help("Sync dates from web")
 
-            // Edit
+            // Edit — same pattern
             Button {
                 withAnimation(.easeInOut(duration: 0.18)) { showingEditor.toggle() }
             } label: {
                 Image(systemName: showingEditor ? "checkmark" : "pencil")
                     .font(.system(size: 11))
                     .foregroundColor(showingEditor ? DK.accent : DK.sec)
+                    .frame(width: 28, height: 28)
+                    .background(showingEditor ? DK.accent.opacity(0.20) : Color.white.opacity(0.07))
+                    .cornerRadius(6)
             }
             .buttonStyle(.plain)
-            .frame(width: 28, height: 28)
-            .background(showingEditor ? DK.accent.opacity(0.20) : Color.white.opacity(0.07))
-            .cornerRadius(6)
             .help(showingEditor ? "Done" : "Edit quarter dates")
         }
         .padding(.horizontal, 16)
@@ -127,14 +127,13 @@ struct QuarterView: View {
 
     private var countdownSection: some View {
         VStack(spacing: 2) {
-            // Big number — full width so it never gets squeezed
+            // Big number — fixed size, always 2 digits, no scaling needed
             Text("\(model.daysRemaining)")
                 .font(.system(size: 160, weight: .bold, design: .rounded))
                 .foregroundStyle(blueGradient)
                 .monospacedDigit()
-                .minimumScaleFactor(0.4)
-                .lineLimit(1)
-                .frame(maxWidth: .infinity)
+                .fixedSize()
+                .frame(maxWidth: .infinity, minHeight: 180)
 
             // Unit label directly below
             Text(model.daysRemaining == 1 ? "DAY" : "DAYS")
