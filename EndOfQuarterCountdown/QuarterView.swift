@@ -149,12 +149,17 @@ struct QuarterView: View {
                     .padding(.top, 4)
             }
 
-            // FY · Period label
-            Text("\(model.financialYear.isEmpty ? "" : model.financialYear + " · ")Q\(model.currentDisplayQuarter) PERIOD")
-                .font(.system(size: 10, weight: .semibold))
+            // FY · Quarter line
+            Text("\(model.financialYear.isEmpty ? "" : model.financialYear + " · ")Q\(model.currentDisplayQuarter)")
+                .font(.system(size: 11, weight: .semibold))
                 .foregroundColor(DK.ter)
                 .kerning(1.0)
                 .padding(.top, 2)
+
+            // End of quarter date in full
+            Text(formatted(model.currentQuarterEnd))
+                .font(.system(size: 11, weight: .medium))
+                .foregroundColor(DK.ter)
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 16)
@@ -421,6 +426,14 @@ struct QuarterView: View {
         let start = cal.startOfDay(for: model.currentQuarterStart)
         let end   = cal.startOfDay(for: model.currentQuarterEnd)
         return cal.dateComponents([.day], from: start, to: end).day ?? 90
+    }
+
+    /// e.g. "Saturday, 25 October 2026"
+    private func formatted(_ date: Date) -> String {
+        let f = DateFormatter()
+        f.dateStyle = .full
+        f.timeStyle = .none
+        return f.string(from: date)
     }
 
     private var syncSubLabel: String {
