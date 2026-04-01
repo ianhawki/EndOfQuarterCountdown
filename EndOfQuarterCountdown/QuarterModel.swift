@@ -35,7 +35,7 @@ class QuarterModel: ObservableObject {
     @Published var fetchError: String? = nil
     @Published var lastFetched: Date? = nil
     @Published var feedURLString: String {
-        didSet { UserDefaults.standard.set(feedURLString, forKey: "feedURL") }
+        didSet { Self.ud.set(feedURLString, forKey: "feedURL") }
     }
 
     /// Quarter number to show in the UI — Q5 is presented as Q1 of the next FY
@@ -44,12 +44,15 @@ class QuarterModel: ObservableObject {
     /// True when counting down to the final stored quarter (next FY Q1) with fewer than 70 days left
     var shouldWarnNextFY: Bool { currentQuarter == 5 && daysRemaining < 70 }
 
+    static let appGroupID      = "group.com.example.endofquartercountdown"
+    static var ud: UserDefaults { UserDefaults(suiteName: appGroupID) ?? .standard }
+
     private static let defaultFeedURL = "https://hawkinsmultimedia.com.au/endofquarter.html"
     private var isSyncingFromComponents = false
     private var timer: Timer?
 
     init() {
-        let d = UserDefaults.standard
+        let d = Self.ud  // shared App Group defaults — also read by widget
         let year = Calendar.current.component(.year, from: Date())
 
         q1End = Self.loadDate(key: "q1c", fallbackMonth: 3,  fallbackDay: 31, fallbackYear: year)
@@ -223,14 +226,14 @@ class QuarterModel: ObservableObject {
             }
 
             // Assign the first four entries to Q1–Q4, the fifth to Q5 (next FY Q1)
-            if entries.count > 0 { q1End = entries[0].date; q1FY = entries[0].fy; UserDefaults.standard.set(q1FY, forKey: "q1FY") }
-            if entries.count > 1 { q2End = entries[1].date; q2FY = entries[1].fy; UserDefaults.standard.set(q2FY, forKey: "q2FY") }
-            if entries.count > 2 { q3End = entries[2].date; q3FY = entries[2].fy; UserDefaults.standard.set(q3FY, forKey: "q3FY") }
-            if entries.count > 3 { q4End = entries[3].date; q4FY = entries[3].fy; UserDefaults.standard.set(q4FY, forKey: "q4FY") }
-            if entries.count > 4 { q5End = entries[4].date; q5FY = entries[4].fy; UserDefaults.standard.set(q5FY, forKey: "q5FY") }
+            if entries.count > 0 { q1End = entries[0].date; q1FY = entries[0].fy; Self.ud.set(q1FY, forKey: "q1FY") }
+            if entries.count > 1 { q2End = entries[1].date; q2FY = entries[1].fy; Self.ud.set(q2FY, forKey: "q2FY") }
+            if entries.count > 2 { q3End = entries[2].date; q3FY = entries[2].fy; Self.ud.set(q3FY, forKey: "q3FY") }
+            if entries.count > 3 { q4End = entries[3].date; q4FY = entries[3].fy; Self.ud.set(q4FY, forKey: "q4FY") }
+            if entries.count > 4 { q5End = entries[4].date; q5FY = entries[4].fy; Self.ud.set(q5FY, forKey: "q5FY") }
 
             lastFetched = Date()
-            UserDefaults.standard.set(lastFetched, forKey: "lastFetched")
+            Self.ud.set(lastFetched, forKey: "lastFetched")
 
         } catch {
             fetchError = error.localizedDescription
@@ -245,11 +248,11 @@ class QuarterModel: ObservableObject {
         guard !isSyncingFromComponents else { return }
         let comps = Calendar.current.dateComponents([.year, .month, .day], from: date)
         guard let y = comps.year, let m = comps.month, let d = comps.day else { return }
-        UserDefaults.standard.set(["y": y, "m": m, "d": d], forKey: key)
+        Self.ud.set(["y": y, "m": m, "d": d], forKey: key)
     }
 
     private static func loadDate(key: String, fallbackMonth: Int, fallbackDay: Int, fallbackYear: Int) -> Date {
-        if let dict = UserDefaults.standard.dictionary(forKey: key) as? [String: Int],
+        if let dict = Self.ud.dictionary(forKey: key) as? [String: Int],
            let y = dict["y"], let m = dict["m"], let d = dict["d"] {
             return makeDate(year: y, month: m, day: d)
         }
