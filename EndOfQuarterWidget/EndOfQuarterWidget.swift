@@ -47,7 +47,6 @@ private func buildEntry(for now: Date = Date()) -> QuarterEntry {
     let cal = Calendar.current
     let yr  = cal.component(.year, from: now)
 
-    // Load quarter end dates from shared defaults
     struct Spec { let key, fyKey: String; let q, fm, fd, fy: Int }
     let specs = [
         Spec(key: "q1c", fyKey: "q1FY", q: 1, fm: 3,  fd: 31, fy: yr),
@@ -78,30 +77,21 @@ private func buildEntry(for now: Date = Date()) -> QuarterEntry {
     let endStart   = cal.startOfDay(for: endDate)
     let days = max(0, cal.dateComponents([.day], from: todayStart, to: endStart).day ?? 0)
 
-    // Quarter start = day after previous quarter ended
     let startDate: Date = {
-        if idx == 0 {
-            return cal.date(byAdding: .year, value: -1, to: ends.last!)!
-        }
+        if idx == 0 { return cal.date(byAdding: .year, value: -1, to: ends.last!)! }
         return cal.date(byAdding: .day, value: 1, to: cal.startOfDay(for: ends[idx - 1]))!
     }()
     let startDay  = cal.startOfDay(for: startDate)
     let total     = max(1, cal.dateComponents([.day], from: startDay, to: endStart).day ?? 90)
     let elapsed   = max(0, cal.dateComponents([.day], from: startDay, to: todayStart).day ?? 0)
     let progress  = Double(min(elapsed, total)) / Double(total)
-    let dayInQ    = max(1, elapsed + 1)
 
     return QuarterEntry(
-        date:           now,
-        daysRemaining:  days,
-        weeksRemaining: days / 7,
-        quarterLabel:   label,
-        financialYear:  fy,
-        progress:       progress,
-        dayInQuarter:   dayInQ,
-        totalDays:      total,
-        fyEndDate:      ends.count > 3 ? ends[3] : nil,
-        shouldWarn:     idx == 4 && days < 70
+        date: now, daysRemaining: days, weeksRemaining: days / 7,
+        quarterLabel: label, financialYear: fy, progress: progress,
+        dayInQuarter: max(1, elapsed + 1), totalDays: total,
+        fyEndDate: ends.count > 3 ? ends[3] : nil,
+        shouldWarn: idx == 4 && days < 70
     )
 }
 
@@ -114,17 +104,14 @@ struct QuarterProvider: TimelineProvider {
                      progress: 0.65, dayInQuarter: 48, totalDays: 90,
                      fyEndDate: nil, shouldWarn: false)
     }
-
     func getSnapshot(in context: Context, completion: @escaping (QuarterEntry) -> Void) {
         completion(buildEntry())
     }
-
     func getTimeline(in context: Context, completion: @escaping (Timeline<QuarterEntry>) -> Void) {
-        let entry    = buildEntry()
         let midnight = Calendar.current.date(
             byAdding: .day, value: 1,
             to: Calendar.current.startOfDay(for: .now))!
-        completion(Timeline(entries: [entry], policy: .after(midnight)))
+        completion(Timeline(entries: [buildEntry()], policy: .after(midnight)))
     }
 }
 
@@ -132,18 +119,15 @@ struct QuarterProvider: TimelineProvider {
 
 struct SmallView: View {
     let e: QuarterEntry
-
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Header
             HStack {
                 if !e.financialYear.isEmpty {
                     Text(e.financialYear)
                         .font(.system(size: 9, weight: .bold))
                         .foregroundColor(.white)
                         .padding(.horizontal, 5).padding(.vertical, 2)
-                        .background(Color.wkAccent)
-                        .cornerRadius(4)
+                        .background(Color.wkAccent).cornerRadius(4)
                 }
                 Spacer()
                 if e.shouldWarn {
@@ -151,10 +135,7 @@ struct SmallView: View {
                         .foregroundColor(.orange).font(.caption)
                 }
             }
-
             Spacer()
-
-            // Days countdown
             HStack(alignment: .lastTextBaseline, spacing: 3) {
                 Text("\(e.daysRemaining)")
                     .font(.custom("Arial-Black", size: 62))
@@ -165,13 +146,10 @@ struct SmallView: View {
                     .foregroundColor(.wkSec)
                     .padding(.bottom, 7)
             }
-
             Text(e.quarterLabel)
-                .font(.system(size: 10, weight: .semibold))
-                .foregroundColor(.wkSec)
+                .font(.system(size: 10, weight: .semibold)).foregroundColor(.wkSec)
             Text("\(e.weeksRemaining) weeks remaining")
-                .font(.system(size: 9))
-                .foregroundColor(.wkTer)
+                .font(.system(size: 9)).foregroundColor(.wkTer)
         }
         .padding(14)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
@@ -183,10 +161,8 @@ struct SmallView: View {
 
 struct MediumView: View {
     let e: QuarterEntry
-
     var body: some View {
         HStack(spacing: 0) {
-
             // Left — countdown
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
@@ -195,8 +171,7 @@ struct MediumView: View {
                             .font(.system(size: 9, weight: .bold))
                             .foregroundColor(.white)
                             .padding(.horizontal, 5).padding(.vertical, 2)
-                            .background(Color.wkAccent)
-                            .cornerRadius(4)
+                            .background(Color.wkAccent).cornerRadius(4)
                     }
                     if e.shouldWarn {
                         Image(systemName: "exclamationmark.triangle.fill")
@@ -216,21 +191,15 @@ struct MediumView: View {
                         .padding(.bottom, 10)
                 }
                 Text(e.quarterLabel)
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundColor(.wkSec)
+                    .font(.system(size: 10, weight: .semibold)).foregroundColor(.wkSec)
             }
             .padding(14)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
 
-            // Divider
-            Rectangle()
-                .fill(Color.white.opacity(0.08))
-                .frame(width: 1)
-                .padding(.vertical, 12)
+            Rectangle().fill(Color.white.opacity(0.08)).frame(width: 1).padding(.vertical, 12)
 
             // Right — stats
             VStack(alignment: .leading, spacing: 0) {
-                // Progress bar
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
                         Text("PROGRESS")
@@ -238,8 +207,7 @@ struct MediumView: View {
                             .foregroundColor(.wkTer).kerning(0.5)
                         Spacer()
                         Text("\(Int((e.progress * 100).rounded()))%")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundColor(.wkAccent)
+                            .font(.system(size: 10, weight: .bold)).foregroundColor(.wkAccent)
                     }
                     GeometryReader { geo in
                         ZStack(alignment: .leading) {
@@ -247,40 +215,27 @@ struct MediumView: View {
                             RoundedRectangle(cornerRadius: 2).fill(wkGradient)
                                 .frame(width: max(4, geo.size.width * e.progress))
                         }
-                    }
-                    .frame(height: 4)
+                    }.frame(height: 4)
                     HStack {
-                        Text("DAY \(e.dayInQuarter)")
-                            .font(.system(size: 8)).foregroundColor(.wkTer)
+                        Text("DAY \(e.dayInQuarter)").font(.system(size: 8)).foregroundColor(.wkTer)
                         Spacer()
-                        Text("DAY \(e.totalDays)")
-                            .font(.system(size: 8)).foregroundColor(.wkTer)
+                        Text("DAY \(e.totalDays)").font(.system(size: 8)).foregroundColor(.wkTer)
                     }
                 }
-
                 Spacer()
-
-                // Weeks left
                 VStack(alignment: .leading, spacing: 1) {
                     Text("WEEKS LEFT")
-                        .font(.system(size: 8, weight: .semibold))
-                        .foregroundColor(.wkTer).kerning(0.5)
+                        .font(.system(size: 8, weight: .semibold)).foregroundColor(.wkTer).kerning(0.5)
                     Text("\(e.weeksRemaining)")
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(.white)
+                        .font(.system(size: 20, weight: .bold)).foregroundColor(.white)
                 }
-
                 Spacer()
-
-                // FY end date
                 if let fyEnd = e.fyEndDate {
                     VStack(alignment: .leading, spacing: 1) {
                         Text("FY ENDS")
-                            .font(.system(size: 8, weight: .semibold))
-                            .foregroundColor(.wkTer).kerning(0.5)
+                            .font(.system(size: 8, weight: .semibold)).foregroundColor(.wkTer).kerning(0.5)
                         Text(fyEnd, format: .dateTime.day().month(.abbreviated).year())
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(.wkSec)
+                            .font(.system(size: 11, weight: .semibold)).foregroundColor(.wkSec)
                     }
                 }
             }
@@ -291,12 +246,11 @@ struct MediumView: View {
     }
 }
 
-// MARK: - Entry view
+// MARK: - Entry view dispatcher
 
 struct EntryView: View {
     let entry: QuarterEntry
     @Environment(\.widgetFamily) var family
-
     var body: some View {
         switch family {
         case .systemSmall: SmallView(e: entry)
@@ -305,19 +259,17 @@ struct EntryView: View {
     }
 }
 
-// MARK: - Widget definition
+// MARK: - Widget
 
-@main
 struct EndOfQuarterWidget: Widget {
     let kind = "EndOfQuarterWidget"
-
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: QuarterProvider()) { entry in
             EntryView(entry: entry)
+                .containerBackground(Color.wkBg, for: .widget)
         }
         .configurationDisplayName("Quarter Countdown")
         .description("Days remaining in the current financial quarter.")
         .supportedFamilies([.systemSmall, .systemMedium])
-        .contentMarginsDisabled()
     }
 }
