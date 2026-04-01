@@ -1,8 +1,19 @@
 import SwiftUI
+import CoreText
 
 @main
 struct EndOfQuarterApp: App {
     @StateObject private var model = QuarterModel()
+
+    init() {
+        // Register any custom fonts bundled inside the app (e.g. ObsidianGlass-Bold.ttf)
+        if let urls = Bundle.main.urls(forResourcesWithExtension: "ttf", subdirectory: nil) {
+            urls.forEach { CTFontManagerRegisterFontsForURL($0 as CFURL, .process, nil) }
+        }
+        if let urls = Bundle.main.urls(forResourcesWithExtension: "otf", subdirectory: nil) {
+            urls.forEach { CTFontManagerRegisterFontsForURL($0 as CFURL, .process, nil) }
+        }
+    }
 
     var body: some Scene {
         MenuBarExtra {
