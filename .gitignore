@@ -29,3 +29,9 @@ DerivedData/
 .AppleDouble
 .LSOverride
 Thumbs.db
+
+# Compiled app bundles (build artefacts — not source code)
+*.app/
+
+# Provisioning profiles
+*.provisionprofile

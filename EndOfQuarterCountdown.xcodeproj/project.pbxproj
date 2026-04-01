@@ -3,17 +3,47 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1E7EE10E2F7CDACD00FED0C3 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1E7EE10D2F7CDACD00FED0C3 /* WidgetKit.framework */; };
+		1E7EE1102F7CDACD00FED0C3 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1E7EE10F2F7CDACD00FED0C3 /* SwiftUI.framework */; };
+		1E7EE11C2F7CDAD000FED0C3 /* EndOfQuarterWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 1E7EE10B2F7CDACD00FED0C3 /* EndOfQuarterWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		BB00000000000000000000001 /* EndOfQuarterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000011 /* EndOfQuarterApp.swift */; };
 		BB00000000000000000000002 /* QuarterModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000012 /* QuarterModel.swift */; };
 		BB00000000000000000000003 /* QuarterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000013 /* QuarterView.swift */; };
 		BB00000000000000000000004 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BB00000000000000000000014 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		1E7EE11A2F7CDAD000FED0C3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BB00000000000000000000060 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1E7EE10A2F7CDACD00FED0C3;
+			remoteInfo = EndOfQuarterWidgetExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		1E7EE1212F7CDAD000FED0C3 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				1E7EE11C2F7CDAD000FED0C3 /* EndOfQuarterWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		1E7EE10B2F7CDACD00FED0C3 /* EndOfQuarterWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = EndOfQuarterWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		1E7EE10D2F7CDACD00FED0C3 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		1E7EE10F2F7CDACD00FED0C3 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		BB00000000000000000000010 /* End of Quarter Countdown.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "End of Quarter Countdown.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB00000000000000000000011 /* EndOfQuarterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EndOfQuarterApp.swift; sourceTree = "<group>"; };
 		BB00000000000000000000012 /* QuarterModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuarterModel.swift; sourceTree = "<group>"; };
@@ -22,7 +52,30 @@
 		BB00000000000000000000015 /* EndOfQuarterCountdown.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = EndOfQuarterCountdown.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		1E7EE11D2F7CDAD000FED0C3 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 1E7EE10A2F7CDACD00FED0C3 /* EndOfQuarterWidgetExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		1E7EE1112F7CDACD00FED0C3 /* EndOfQuarterWidget */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (1E7EE11D2F7CDAD000FED0C3 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = EndOfQuarterWidget; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXFrameworksBuildPhase section */
+		1E7EE1082F7CDACD00FED0C3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1E7EE1102F7CDACD00FED0C3 /* SwiftUI.framework in Frameworks */,
+				1E7EE10E2F7CDACD00FED0C3 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		BB00000000000000000000021 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -33,10 +86,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1E7EE10C2F7CDACD00FED0C3 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				1E7EE10D2F7CDACD00FED0C3 /* WidgetKit.framework */,
+				1E7EE10F2F7CDACD00FED0C3 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		BB00000000000000000000030 = {
 			isa = PBXGroup;
 			children = (
 				BB00000000000000000000031 /* EndOfQuarterCountdown */,
+				1E7EE1112F7CDACD00FED0C3 /* EndOfQuarterWidget */,
+				1E7EE10C2F7CDACD00FED0C3 /* Frameworks */,
 				BB00000000000000000000032 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -57,6 +121,7 @@
 			isa = PBXGroup;
 			children = (
 				BB00000000000000000000010 /* End of Quarter Countdown.app */,
+				1E7EE10B2F7CDACD00FED0C3 /* EndOfQuarterWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -64,6 +129,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		1E7EE10A2F7CDACD00FED0C3 /* EndOfQuarterWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1E7EE11E2F7CDAD000FED0C3 /* Build configuration list for PBXNativeTarget "EndOfQuarterWidgetExtension" */;
+			buildPhases = (
+				1E7EE1072F7CDACD00FED0C3 /* Sources */,
+				1E7EE1082F7CDACD00FED0C3 /* Frameworks */,
+				1E7EE1092F7CDACD00FED0C3 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				1E7EE1112F7CDACD00FED0C3 /* EndOfQuarterWidget */,
+			);
+			name = EndOfQuarterWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = EndOfQuarterWidgetExtension;
+			productReference = 1E7EE10B2F7CDACD00FED0C3 /* EndOfQuarterWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		BB00000000000000000000040 /* EndOfQuarterCountdown */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = BB00000000000000000000050 /* Build configuration list for PBXNativeTarget "EndOfQuarterCountdown" */;
@@ -71,10 +158,12 @@
 				BB00000000000000000000020 /* Sources */,
 				BB00000000000000000000021 /* Frameworks */,
 				BB00000000000000000000022 /* Resources */,
+				1E7EE1212F7CDAD000FED0C3 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				1E7EE11B2F7CDAD000FED0C3 /* PBXTargetDependency */,
 			);
 			name = EndOfQuarterCountdown;
 			productName = EndOfQuarterCountdown;
@@ -88,9 +177,12 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1500;
+				LastSwiftUpdateCheck = 1640;
 				LastUpgradeCheck = 1640;
 				TargetAttributes = {
+					1E7EE10A2F7CDACD00FED0C3 = {
+						CreatedOnToolsVersion = 16.4;
+					};
 					BB00000000000000000000040 = {
 						CreatedOnToolsVersion = 15.0;
 					};
@@ -110,11 +202,19 @@
 			projectRoot = "";
 			targets = (
 				BB00000000000000000000040 /* EndOfQuarterCountdown */,
+				1E7EE10A2F7CDACD00FED0C3 /* EndOfQuarterWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		1E7EE1092F7CDACD00FED0C3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		BB00000000000000000000022 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -126,6 +226,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		1E7EE1072F7CDACD00FED0C3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		BB00000000000000000000020 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -138,7 +245,90 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		1E7EE11B2F7CDAD000FED0C3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1E7EE10A2F7CDACD00FED0C3 /* EndOfQuarterWidgetExtension */;
+			targetProxy = 1E7EE11A2F7CDAD000FED0C3 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		1E7EE11F2F7CDAD000FED0C3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = EndOfQuarterWidget/EndOfQuarterWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = M32DHN3DX6;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = EndOfQuarterWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = EndOfQuarterWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.endofquartercountdown.EndOfQuarterWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		1E7EE1202F7CDAD000FED0C3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_ENTITLEMENTS = EndOfQuarterWidget/EndOfQuarterWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = M32DHN3DX6;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = EndOfQuarterWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = EndOfQuarterWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.endofquartercountdown.EndOfQuarterWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 		BB00000000000000000000070 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -270,8 +460,8 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 2.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
+				MARKETING_VERSION = 2.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.endofquartercountdown;
 				PRODUCT_NAME = "End of Quarter Countdown";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -303,8 +493,8 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 13.0;
-				MARKETING_VERSION = 2.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.6;
+				MARKETING_VERSION = 2.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.endofquartercountdown;
 				PRODUCT_NAME = "End of Quarter Countdown";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -315,6 +505,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		1E7EE11E2F7CDAD000FED0C3 /* Build configuration list for PBXNativeTarget "EndOfQuarterWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1E7EE11F2F7CDAD000FED0C3 /* Debug */,
+				1E7EE1202F7CDAD000FED0C3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		BB00000000000000000000050 /* Build configuration list for PBXNativeTarget "EndOfQuarterCountdown" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
