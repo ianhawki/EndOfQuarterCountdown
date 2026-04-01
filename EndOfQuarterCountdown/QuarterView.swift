@@ -130,14 +130,14 @@ struct QuarterView: View {
             // Big number + DAYS beside it at 20% of number size
             HStack(alignment: .lastTextBaseline, spacing: 6) {
                 Text("\(model.daysRemaining)")
-                    .font(.custom("ObsidianGlass-Bold", size: 160))
+                    .font(.system(size: 160, weight: .black, design: .rounded))
                     .foregroundStyle(blueGradient)
                     .fixedSize()
 
                 Text(model.daysRemaining == 1 ? "DAY" : "DAYS")
-                    .font(.custom("ObsidianGlass-Bold", size: 32)) // 20% of 160
+                    .font(.system(size: 32, weight: .black, design: .rounded)) // 20% of 160
                     .foregroundColor(DK.sec)
-                    .padding(.bottom, 14) // lifts it slightly above the hard baseline
+                    .padding(.bottom, 14)
             }
             .frame(maxWidth: .infinity, minHeight: 180)
 
