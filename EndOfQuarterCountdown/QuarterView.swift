@@ -1,5 +1,27 @@
 import SwiftUI
 
+// MARK: - Design tokens
+private enum DK {
+    static let bg      = Color(red: 0.09, green: 0.09, blue: 0.14)
+    static let card    = Color(red: 0.14, green: 0.14, blue: 0.20)
+    static let divider = Color.white.opacity(0.08)
+    static let accent  = Color(red: 0.28, green: 0.56, blue: 1.00)
+    static let pri     = Color.white
+    static let sec     = Color.white.opacity(0.50)
+    static let ter     = Color.white.opacity(0.28)
+    static let warnBg  = Color(red: 0.50, green: 0.28, blue: 0.04).opacity(0.40)
+    static let warnFg  = Color(red: 1.00, green: 0.74, blue: 0.32)
+}
+
+private let blueGradient = LinearGradient(
+    colors: [Color(red: 0.52, green: 0.78, blue: 1.00),
+             Color(red: 0.22, green: 0.46, blue: 0.96)],
+    startPoint: .topLeading,
+    endPoint: .bottomTrailing
+)
+
+// MARK: - Main View
+
 struct QuarterView: View {
     @EnvironmentObject var model: QuarterModel
     @State private var showingEditor = false
@@ -8,80 +30,88 @@ struct QuarterView: View {
     var body: some View {
         VStack(spacing: 0) {
             header
-            Divider()
-            countdown
-            Divider()
+            thinDivider
+            countdownSection
+            progressSection
+            infoCards
 
             if model.shouldWarnNextFY {
+                thinDivider
                 nextFYWarning
-                Divider()
             }
 
             if showingEditor {
+                thinDivider
                 quarterEditor
             }
 
+            thinDivider
             footer
         }
         .frame(width: 340)
+        .background(DK.bg)
+        .preferredColorScheme(.dark)
     }
 
-    // MARK: - Sections
+    // MARK: Header ─────────────────────────────────────────────────────────────
 
     private var header: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "calendar.badge.clock")
-                .font(.title2)
-                .foregroundColor(.accentColor)
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 6) {
-                    Text("Q\(model.currentDisplayQuarter) · End of Quarter")
-                        .font(.headline)
+        HStack(alignment: .top, spacing: 10) {
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 8) {
+                    Text("End of Quarter Countdown")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(DK.pri)
+
                     if !model.financialYear.isEmpty {
                         Text(model.financialYear)
-                            .font(.system(size: 11, weight: .semibold, design: .rounded))
+                            .font(.system(size: 10, weight: .bold))
                             .foregroundColor(.white)
-                            .padding(.horizontal, 5)
+                            .padding(.horizontal, 7)
                             .padding(.vertical, 2)
-                            .background(Color.accentColor)
+                            .background(DK.accent)
                             .cornerRadius(4)
                     }
                 }
-                Text(formatted(model.currentQuarterEnd))
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                Text("Q\(model.currentDisplayQuarter) FISCAL PERFORMANCE WINDOW")
+                    .font(.system(size: 9, weight: .semibold))
+                    .foregroundColor(DK.sec)
+                    .kerning(0.8)
             }
+
             Spacer()
 
-            // Sync button
-            Button {
-                Task { await model.fetchDates() }
-            } label: {
-                if model.isFetching {
-                    ProgressView()
-                        .scaleEffect(0.65)
-                        .frame(width: 18, height: 18)
-                } else {
-                    Image(systemName: "arrow.clockwise.icloud")
-                        .font(.title3)
-                        .foregroundColor(.accentColor)
+            // Sync
+            Button { Task { await model.fetchDates() } } label: {
+                Group {
+                    if model.isFetching {
+                        ProgressView().scaleEffect(0.6).frame(width: 14, height: 14)
+                    } else {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 12))
+                            .foregroundColor(DK.sec)
+                    }
                 }
             }
             .buttonStyle(.plain)
             .disabled(model.isFetching)
+            .frame(width: 28, height: 28)
+            .background(Color.white.opacity(0.07))
+            .cornerRadius(6)
             .help("Sync dates from web")
 
-            // Edit button
+            // Edit
             Button {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    showingEditor.toggle()
-                }
+                withAnimation(.easeInOut(duration: 0.18)) { showingEditor.toggle() }
             } label: {
-                Image(systemName: showingEditor ? "checkmark.circle.fill" : "slider.horizontal.3")
-                    .font(.title3)
-                    .foregroundColor(showingEditor ? .green : .accentColor)
+                Image(systemName: showingEditor ? "checkmark" : "pencil")
+                    .font(.system(size: 11))
+                    .foregroundColor(showingEditor ? DK.accent : DK.sec)
             }
             .buttonStyle(.plain)
+            .frame(width: 28, height: 28)
+            .background(showingEditor ? DK.accent.opacity(0.20) : Color.white.opacity(0.07))
+            .cornerRadius(6)
             .help(showingEditor ? "Done" : "Edit quarter dates")
         }
         .padding(.horizontal, 16)
@@ -89,95 +119,198 @@ struct QuarterView: View {
         .padding(.bottom, 12)
     }
 
-    private var countdown: some View {
-        HStack(spacing: 8) {
-            CountdownUnit(value: model.daysRemaining,    label: "DAYS")
-            separator
-            CountdownUnit(value: model.currentWeekNumber, label: "WEEK")
-            separator
-            CountdownUnit(value: model.weeksRemaining,   label: "WKS LEFT")
+    // MARK: Countdown ──────────────────────────────────────────────────────────
+
+    private var countdownSection: some View {
+        VStack(spacing: 5) {
+            // Big number + unit
+            HStack(alignment: .lastTextBaseline, spacing: 5) {
+                Text("\(model.daysRemaining)")
+                    .font(.system(size: 80, weight: .bold, design: .rounded))
+                    .foregroundStyle(blueGradient)
+                    .monospacedDigit()
+                    .minimumScaleFactor(0.5)
+                    .lineLimit(1)
+
+                Text(model.daysRemaining == 1 ? "DAY" : "DAYS")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(DK.sec)
+                    .padding(.bottom, 12)
+            }
+
+            // Weeks secondary
+            if model.weeksRemaining > 0 {
+                Text("≈ \(model.weeksRemaining) \(model.weeksRemaining == 1 ? "week" : "weeks") remaining")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(DK.sec)
+            }
+
+            // FY · Period label
+            Text("\(model.financialYear.isEmpty ? "" : model.financialYear + " · ")Q\(model.currentDisplayQuarter) PERIOD")
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundColor(DK.ter)
+                .kerning(1.0)
+                .padding(.top, 2)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 16)
+        .padding(.top, 16)
+        .padding(.bottom, 14)
+    }
+
+    // MARK: Progress bar ───────────────────────────────────────────────────────
+
+    private var progressSection: some View {
+        VStack(spacing: 7) {
+            HStack {
+                Text("QUARTER PROGRESS")
+                    .font(.system(size: 9, weight: .semibold))
+                    .foregroundColor(DK.ter)
+                    .kerning(0.8)
+                Spacer()
+                Text("\(Int((quarterProgress * 100).rounded()))%")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundColor(DK.accent)
+            }
+
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 3)
+                        .fill(Color.white.opacity(0.09))
+                    RoundedRectangle(cornerRadius: 3)
+                        .fill(blueGradient)
+                        .frame(width: max(6, geo.size.width * quarterProgress))
+                }
+            }
+            .frame(height: 6)
+
+            HStack {
+                Text("DAY \(dayInQuarter)")
+                    .font(.system(size: 9, weight: .medium))
+                    .foregroundColor(DK.ter)
+                Spacer()
+                Text("DAY \(totalDaysInQuarter)")
+                    .font(.system(size: 9, weight: .medium))
+                    .foregroundColor(DK.ter)
+            }
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 14)
+        .padding(.bottom, 14)
     }
+
+    // MARK: Info cards ─────────────────────────────────────────────────────────
+
+    private var infoCards: some View {
+        HStack(spacing: 10) {
+            infoCard(
+                title: "NEXT MILESTONE",
+                value: "\(model.financialYear) Q\(model.currentDisplayQuarter) End",
+                sub: "In \(model.daysRemaining) \(model.daysRemaining == 1 ? "day" : "days")"
+            )
+            infoCard(
+                title: "ACCURACY",
+                value: model.lastFetched != nil ? "Web Sync" : "Manual",
+                sub: syncSubLabel
+            )
+        }
+        .padding(.horizontal, 16)
+        .padding(.bottom, 14)
+    }
+
+    private func infoCard(title: String, value: String, sub: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.system(size: 8, weight: .semibold))
+                .foregroundColor(DK.ter)
+                .kerning(0.8)
+            Text(value)
+                .font(.system(size: 14, weight: .bold))
+                .foregroundColor(DK.pri)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+            Text(sub)
+                .font(.system(size: 10))
+                .foregroundColor(DK.sec)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(DK.card)
+        .cornerRadius(10)
+    }
+
+    // MARK: Warning banner ─────────────────────────────────────────────────────
 
     private var nextFYWarning: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
                 Image(systemName: "exclamationmark.triangle.fill")
-                    .foregroundColor(.orange)
+                    .foregroundColor(DK.warnFg)
+                    .font(.caption)
                 Text("New FY dates needed")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(.orange)
+                    .foregroundColor(DK.warnFg)
             }
             Text("Fewer than 70 days until \(model.financialYear) Q1 ends. Sync or update your quarter dates to keep the countdown accurate.")
                 .font(.caption)
-                .foregroundColor(.secondary)
+                .foregroundColor(DK.warnFg.opacity(0.80))
                 .fixedSize(horizontal: false, vertical: true)
+
             HStack(spacing: 8) {
                 Button {
                     Task { await model.fetchDates() }
                 } label: {
-                    Label("Sync Now", systemImage: "arrow.clockwise.icloud")
+                    Label("Sync Now", systemImage: "arrow.clockwise")
                         .font(.caption)
                 }
                 .buttonStyle(.borderedProminent)
-                .tint(.orange)
+                .tint(Color(red: 0.75, green: 0.45, blue: 0.08))
                 .disabled(model.isFetching)
 
                 Button {
-                    withAnimation(.easeInOut(duration: 0.2)) { showingEditor = true }
+                    withAnimation(.easeInOut(duration: 0.18)) { showingEditor = true }
                 } label: {
-                    Label("Edit Dates", systemImage: "slider.horizontal.3")
+                    Label("Edit Dates", systemImage: "pencil")
                         .font(.caption)
                 }
                 .buttonStyle(.bordered)
+                .tint(DK.warnFg)
             }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.orange.opacity(0.07))
+        .background(DK.warnBg)
     }
+
+    // MARK: Quarter editor ─────────────────────────────────────────────────────
 
     private var quarterEditor: some View {
         VStack(spacing: 0) {
             // Sync status
-            HStack {
+            HStack(spacing: 6) {
                 if let error = model.fetchError {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .foregroundColor(.orange)
-                        .font(.caption)
-                    Text(error)
-                        .font(.caption)
-                        .foregroundColor(.orange)
+                    Image(systemName: "exclamationmark.triangle.fill").foregroundColor(.orange).font(.caption)
+                    Text(error).font(.caption).foregroundColor(.orange)
                 } else if let last = model.lastFetched {
-                    Image(systemName: "checkmark.icloud")
-                        .foregroundColor(.secondary)
-                        .font(.caption)
-                    Text("Synced \(relativeTime(last))")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    Image(systemName: "checkmark.icloud").foregroundColor(DK.sec).font(.caption)
+                    Text("Synced \(relativeTime(last))").font(.caption).foregroundColor(DK.sec)
                 } else {
-                    Image(systemName: "icloud.slash")
-                        .foregroundColor(.secondary)
-                        .font(.caption)
-                    Text("Not yet synced from web")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    Image(systemName: "icloud.slash").foregroundColor(DK.sec).font(.caption)
+                    Text("Not yet synced from web").font(.caption).foregroundColor(DK.sec)
                 }
                 Spacer()
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
 
-            Divider()
+            thinDivider
 
             // URL field
             VStack(alignment: .leading, spacing: 6) {
                 Text("SYNC URL")
                     .font(.system(size: 9, weight: .semibold))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(DK.ter)
                     .kerning(1)
                 HStack(spacing: 6) {
                     TextField("https://", text: $urlDraft)
@@ -188,7 +321,7 @@ struct QuarterView: View {
                         .font(.caption)
                         .disabled(urlDraft == model.feedURLString || !isValidURL(urlDraft))
                 }
-                if !isValidURL(urlDraft) {
+                if !urlDraft.isEmpty && !isValidURL(urlDraft) {
                     Text("Enter a valid http or https URL")
                         .font(.caption2)
                         .foregroundColor(.red)
@@ -198,82 +331,107 @@ struct QuarterView: View {
             .padding(.vertical, 10)
             .onAppear { urlDraft = model.feedURLString }
 
-            Divider()
+            thinDivider
 
             QuarterRow(label: rowLabel(1), date: $model.q1End, isCurrent: model.currentQuarter == 1)
-            Divider().padding(.leading, 44)
+            thinDivider.padding(.leading, 44)
             QuarterRow(label: rowLabel(2), date: $model.q2End, isCurrent: model.currentQuarter == 2)
-            Divider().padding(.leading, 44)
+            thinDivider.padding(.leading, 44)
             QuarterRow(label: rowLabel(3), date: $model.q3End, isCurrent: model.currentQuarter == 3)
-            Divider().padding(.leading, 44)
+            thinDivider.padding(.leading, 44)
             QuarterRow(label: rowLabel(4), date: $model.q4End, isCurrent: model.currentQuarter == 4)
-            Divider().padding(.leading, 44)
+            thinDivider.padding(.leading, 44)
             QuarterRow(label: rowLabel(5), date: $model.q5End, isCurrent: model.currentQuarter == 5)
         }
     }
 
+    // MARK: Footer ─────────────────────────────────────────────────────────────
+
     private var footer: some View {
-        VStack(spacing: 0) {
-            Divider()
-            HStack {
-                Toggle("Launch at Login", isOn: Binding(
-                    get: { model.launchAtLogin },
-                    set: { model.setLaunchAtLogin($0) }
-                ))
-                .toggleStyle(.checkbox)
-                .font(.caption)
-                .foregroundColor(.secondary)
-                Spacer()
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 6)
+        HStack(spacing: 10) {
+            Toggle("", isOn: Binding(
+                get: { model.launchAtLogin },
+                set: { model.setLaunchAtLogin($0) }
+            ))
+            .toggleStyle(.checkbox)
+            .labelsHidden()
 
-            Divider()
+            Text("Launch at Login")
+                .font(.system(size: 11))
+                .foregroundColor(DK.sec)
 
-            HStack {
-                Text(appVersion)
-                    .font(.caption)
-                    .foregroundColor(Color.secondary.opacity(0.6))
-                Text("by")
-                    .font(.caption)
-                    .foregroundColor(Color.secondary.opacity(0.6))
-                Link("Ian Hawkins", destination: URL(string: "mailto:ian@hawkinsmultimedia.net")!)
-                    .font(.caption)
-                    .foregroundColor(.accentColor)
-                Spacer()
-                Button("Quit") { NSApplication.shared.terminate(nil) }
-                    .buttonStyle(.plain)
-                    .foregroundColor(.secondary)
-                    .font(.caption)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            Spacer()
+
+            Text(appVersion)
+                .font(.system(size: 9))
+                .foregroundColor(DK.ter)
+            Text("·")
+                .font(.system(size: 9))
+                .foregroundColor(DK.ter)
+            Text("by")
+                .font(.system(size: 9))
+                .foregroundColor(DK.ter)
+            Link("Ian Hawkins", destination: URL(string: "mailto:ian@hawkinsmultimedia.net")!)
+                .font(.system(size: 9))
+                .foregroundColor(DK.accent)
+
+            Button("QUIT") { NSApplication.shared.terminate(nil) }
+                .buttonStyle(.plain)
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundColor(DK.ter)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.white.opacity(0.07))
+                .cornerRadius(5)
         }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
     }
 
-    // MARK: - Helpers
+    // MARK: Computed helpers ───────────────────────────────────────────────────
 
-    private var separator: some View {
-        Text(":")
-            .font(.system(size: 22, weight: .light))
-            .foregroundColor(.secondary)
-            .padding(.bottom, 16)
+    private var quarterProgress: Double {
+        let cal   = Calendar.current
+        let start = cal.startOfDay(for: model.currentQuarterStart)
+        let end   = cal.startOfDay(for: model.currentQuarterEnd)
+        let today = cal.startOfDay(for: Date())
+        let total   = cal.dateComponents([.day], from: start, to: end).day   ?? 90
+        let elapsed = cal.dateComponents([.day], from: start, to: today).day ?? 0
+        guard total > 0 else { return 0 }
+        return Double(max(0, min(elapsed, total))) / Double(total)
     }
 
-    private func formatted(_ date: Date) -> String {
-        let f = DateFormatter()
-        f.dateStyle = .long
-        f.timeStyle = .none
-        return f.string(from: date)
+    private var dayInQuarter: Int {
+        let cal     = Calendar.current
+        let start   = cal.startOfDay(for: model.currentQuarterStart)
+        let today   = cal.startOfDay(for: Date())
+        let elapsed = cal.dateComponents([.day], from: start, to: today).day ?? 0
+        return max(1, elapsed + 1)
+    }
+
+    private var totalDaysInQuarter: Int {
+        let cal   = Calendar.current
+        let start = cal.startOfDay(for: model.currentQuarterStart)
+        let end   = cal.startOfDay(for: model.currentQuarterEnd)
+        return cal.dateComponents([.day], from: start, to: end).day ?? 90
+    }
+
+    private var syncSubLabel: String {
+        if model.fetchError != nil           { return "Sync failed" }
+        if let last = model.lastFetched      { return "Synced \(relativeTime(last))" }
+        return "Not synced"
+    }
+
+    private var thinDivider: some View {
+        Rectangle().fill(DK.divider).frame(height: 1)
     }
 
     private func relativeTime(_ date: Date) -> String {
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .abbreviated
-        return formatter.localizedString(for: date, relativeTo: Date())
+        let f = RelativeDateTimeFormatter()
+        f.unitsStyle = .abbreviated
+        return f.localizedString(for: date, relativeTo: Date())
     }
 
-    /// Build the row label from the stored FY label + quarter display number.
     private func rowLabel(_ slot: Int) -> String {
         let fy = model.fyLabel(for: slot)
         let q  = slot == 5 ? 1 : slot
@@ -291,13 +449,13 @@ struct QuarterView: View {
     }
 
     private var appVersion: String {
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
-        let build   = Bundle.main.infoDictionary?["CFBundleVersion"]            as? String ?? "?"
-        return "v\(version) (\(build))"
+        let v = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
+        let b = Bundle.main.infoDictionary?["CFBundleVersion"]            as? String ?? "?"
+        return "v\(v) (\(b))"
     }
 }
 
-// MARK: - Quarter Row
+// MARK: - Quarter Row ──────────────────────────────────────────────────────────
 
 struct QuarterRow: View {
     let label: String
@@ -308,12 +466,12 @@ struct QuarterRow: View {
         HStack(spacing: 10) {
             Text(label)
                 .font(.system(size: 12, weight: isCurrent ? .bold : .regular, design: .rounded))
-                .foregroundColor(isCurrent ? .accentColor : .secondary)
+                .foregroundColor(isCurrent ? DK.accent : DK.sec)
                 .lineLimit(1)
                 .frame(width: 72, alignment: .leading)
                 .padding(.vertical, 2)
                 .padding(.horizontal, 4)
-                .background(isCurrent ? Color.accentColor.opacity(0.12) : Color.clear)
+                .background(isCurrent ? DK.accent.opacity(0.15) : Color.clear)
                 .cornerRadius(5)
 
             DatePicker("", selection: $date, displayedComponents: .date)
@@ -323,39 +481,12 @@ struct QuarterRow: View {
             Spacer()
 
             if isCurrent {
-                Image(systemName: "arrow.left")
-                    .font(.caption2)
-                    .foregroundColor(.accentColor)
-                Text("current")
-                    .font(.caption2)
-                    .foregroundColor(.accentColor)
+                Image(systemName: "arrow.left").font(.caption2).foregroundColor(DK.accent)
+                Text("current").font(.caption2).foregroundColor(DK.accent)
             }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
-        .background(isCurrent ? Color.accentColor.opacity(0.05) : Color.clear)
-    }
-}
-
-// MARK: - Countdown Unit
-
-struct CountdownUnit: View {
-    let value: Int
-    let label: String
-
-    var body: some View {
-        VStack(spacing: 4) {
-            Text(String(format: "%02d", value))
-                .font(.system(size: 32, weight: .bold, design: .rounded))
-                .monospacedDigit()
-            Text(label)
-                .font(.system(size: 9, weight: .semibold))
-                .foregroundColor(.secondary)
-                .kerning(1)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 10)
-        .background(Color.secondary.opacity(0.08))
-        .cornerRadius(8)
+        .background(isCurrent ? DK.accent.opacity(0.06) : Color.clear)
     }
 }
