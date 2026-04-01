@@ -51,6 +51,10 @@ struct QuarterView: View {
         .frame(width: 340)
         .background(DK.bg)
         .preferredColorScheme(.dark)
+        // Collapse editor every time the popup window comes to front
+        .onReceive(NotificationCenter.default.publisher(for: NSWindow.didBecomeKeyNotification)) { _ in
+            withAnimation(.easeInOut(duration: 0.18)) { showingEditor = false }
+        }
     }
 
     // MARK: Header ─────────────────────────────────────────────────────────────
@@ -87,8 +91,8 @@ struct QuarterView: View {
                     if model.isFetching {
                         ProgressView().scaleEffect(0.6).frame(width: 14, height: 14)
                     } else {
-                        Image(systemName: "arrow.clockwise")
-                            .font(.system(size: 12))
+                        Image(systemName: "arrow.clockwise.icloud")
+                            .font(.system(size: 14))
                             .foregroundColor(DK.sec)
                     }
                 }
@@ -122,27 +126,28 @@ struct QuarterView: View {
     // MARK: Countdown ──────────────────────────────────────────────────────────
 
     private var countdownSection: some View {
-        VStack(spacing: 5) {
-            // Big number + unit
-            HStack(alignment: .lastTextBaseline, spacing: 5) {
-                Text("\(model.daysRemaining)")
-                    .font(.system(size: 160, weight: .bold, design: .rounded))
-                    .foregroundStyle(blueGradient)
-                    .monospacedDigit()
-                    .minimumScaleFactor(0.3)
-                    .lineLimit(1)
+        VStack(spacing: 2) {
+            // Big number — full width so it never gets squeezed
+            Text("\(model.daysRemaining)")
+                .font(.system(size: 160, weight: .bold, design: .rounded))
+                .foregroundStyle(blueGradient)
+                .monospacedDigit()
+                .minimumScaleFactor(0.4)
+                .lineLimit(1)
+                .frame(maxWidth: .infinity)
 
-                Text(model.daysRemaining == 1 ? "DAY" : "DAYS")
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(DK.sec)
-                    .padding(.bottom, 12)
-            }
+            // Unit label directly below
+            Text(model.daysRemaining == 1 ? "DAY" : "DAYS")
+                .font(.system(size: 15, weight: .bold))
+                .foregroundColor(DK.sec)
+                .kerning(2)
 
             // Weeks secondary
             if model.weeksRemaining > 0 {
                 Text("≈ \(model.weeksRemaining) \(model.weeksRemaining == 1 ? "week" : "weeks") remaining")
                     .font(.system(size: 13, weight: .medium))
                     .foregroundColor(DK.sec)
+                    .padding(.top, 4)
             }
 
             // FY · Period label
