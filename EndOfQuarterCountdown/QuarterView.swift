@@ -134,9 +134,7 @@ struct QuarterView: View {
                     .foregroundStyle(blueGradient)
                     .fixedSize()
 
-                Text(model.daysRemaining == 1
-                     ? (model.useBusinessDays ? "WORK DAY"  : "DAY")
-                     : (model.useBusinessDays ? "WORK DAYS" : "DAYS"))
+                Text(model.daysRemaining == 1 ? "DAY" : "DAYS")
                     .font(.custom("Arial-Black", size: 29)) // 20% of 144
                     .foregroundColor(DK.sec)
                     .padding(.bottom, 14)
@@ -371,17 +369,11 @@ struct QuarterView: View {
                 .toggleStyle(.checkbox)
                 .labelsHidden()
 
-                Text(model.useBusinessDays ? "Business days (Mon–Fri)" : "Calendar days")
+                Text("Business days (Mon–Fri)")
                     .font(.system(size: 11))
                     .foregroundColor(DK.sec)
 
                 Spacer()
-
-                if model.useBusinessDays {
-                    Text("excl. weekends")
-                        .font(.system(size: 9))
-                        .foregroundColor(DK.ter)
-                }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
