@@ -134,7 +134,9 @@ struct QuarterView: View {
                     .foregroundStyle(blueGradient)
                     .fixedSize()
 
-                Text(model.daysRemaining == 1 ? "DAY" : "DAYS")
+                Text(model.daysRemaining == 1
+                     ? (model.useBusinessDays ? "WORK DAY"  : "DAY")
+                     : (model.useBusinessDays ? "WORK DAYS" : "DAYS"))
                     .font(.custom("Arial-Black", size: 29)) // 20% of 144
                     .foregroundColor(DK.sec)
                     .padding(.bottom, 14)
@@ -359,7 +361,35 @@ struct QuarterView: View {
     // MARK: Footer ─────────────────────────────────────────────────────────────
 
     private var footer: some View {
-        HStack(spacing: 10) {
+        VStack(spacing: 0) {
+            // Row 1 — day mode toggle
+            HStack(spacing: 8) {
+                Toggle("", isOn: Binding(
+                    get: { model.useBusinessDays },
+                    set: { model.setBusinessDays($0) }
+                ))
+                .toggleStyle(.checkbox)
+                .labelsHidden()
+
+                Text(model.useBusinessDays ? "Business days (Mon–Fri)" : "Calendar days")
+                    .font(.system(size: 11))
+                    .foregroundColor(DK.sec)
+
+                Spacer()
+
+                if model.useBusinessDays {
+                    Text("excl. weekends")
+                        .font(.system(size: 9))
+                        .foregroundColor(DK.ter)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+
+            thinDivider
+
+            // Row 2 — launch at login + version + quit
+            HStack(spacing: 10) {
             Toggle("", isOn: Binding(
                 get: { model.launchAtLogin },
                 set: { model.setLaunchAtLogin($0) }
@@ -394,10 +424,11 @@ struct QuarterView: View {
                 .padding(.vertical, 4)
                 .background(Color.white.opacity(0.07))
                 .cornerRadius(5)
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
+            .padding(.bottom, 20)
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 10)
-        .padding(.bottom, 20)
     }
 
     // MARK: Computed helpers ───────────────────────────────────────────────────

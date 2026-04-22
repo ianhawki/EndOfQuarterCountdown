@@ -12,9 +12,12 @@ struct EndOfQuarterApp: App {
             HStack(spacing: 4) {
                 Image(systemName: model.shouldWarnNextFY ? "exclamationmark.triangle.fill" : "calendar")
                     .foregroundColor(model.shouldWarnNextFY ? .orange : .primary)
-                Text(model.financialYear.isEmpty
-                     ? "Q\(model.currentDisplayQuarter) · \(model.daysRemaining)d"
-                     : "\(model.financialYear) Q\(model.currentDisplayQuarter) · \(model.daysRemaining)d")
+                Text({
+                    let days = "\(model.daysRemaining)\(model.useBusinessDays ? "bd" : "d")"
+                    return model.financialYear.isEmpty
+                        ? "Q\(model.currentDisplayQuarter) · \(days)"
+                        : "\(model.financialYear) Q\(model.currentDisplayQuarter) · \(days)"
+                }())
                     .font(.system(size: 13, weight: .bold, design: .rounded))
                     .foregroundColor(model.shouldWarnNextFY ? .orange : .primary)
             }

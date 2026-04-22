@@ -21,6 +21,7 @@ class QuarterModel: ObservableObject {
     @Published var daysRemaining: Int = 0
     @Published var weeksRemaining: Int = 0
     @Published var currentWeekNumber: Int = 1
+    @Published var useBusinessDays: Bool = false
 
     /// 1–5 internally; use currentDisplayQuarter for UI (Q5 shows as Q1 of next FY)
     @Published var currentQuarter: Int = 1
@@ -67,7 +68,8 @@ class QuarterModel: ObservableObject {
         q4FY = d.string(forKey: "q4FY") ?? ""
         q5FY = d.string(forKey: "q5FY") ?? ""
 
-        feedURLString = d.string(forKey: "feedURL") ?? Self.defaultFeedURL
+        feedURLString   = d.string(forKey: "feedURL") ?? Self.defaultFeedURL
+        useBusinessDays = d.bool(forKey: "useBusinessDays")
 
         if let saved = d.object(forKey: "lastFetched") as? Date { lastFetched = saved }
 
@@ -120,14 +122,16 @@ class QuarterModel: ObservableObject {
         // Update the FY badge to match whichever quarter we're in
         financialYear = fyLabel(for: currentQuarter)
 
-        let days = cal.dateComponents(
+        let calDays = cal.dateComponents(
             [.day],
             from: cal.startOfDay(for: now),
             to: cal.startOfDay(for: currentQuarterEnd)
         ).day ?? 0
 
-        daysRemaining     = max(0, days)
-        weeksRemaining    = max(0, daysRemaining / 7)
+        daysRemaining  = max(0, useBusinessDays
+            ? businessDaysBetween(from: now, to: currentQuarterEnd)
+            : calDays)
+        weeksRemaining    = max(0, daysRemaining / (useBusinessDays ? 5 : 7))
         currentWeekNumber = weekNumber(quarterStart: currentQuarterStart, today: now)
     }
 
@@ -279,6 +283,28 @@ class QuarterModel: ObservableObject {
             print("Launch at login error: \(error.localizedDescription)")
         }
         launchAtLogin = SMAppService.mainApp.status == .enabled
+    }
+
+    // MARK: - Business Days
+
+    func setBusinessDays(_ enabled: Bool) {
+        useBusinessDays = enabled
+        Self.ud.set(enabled, forKey: "useBusinessDays")
+        update()
+    }
+
+    /// Counts Mon–Fri days between two dates (public holidays not excluded).
+    private func businessDaysBetween(from startDate: Date, to endDate: Date) -> Int {
+        let cal    = Calendar.current
+        var count  = 0
+        var cursor = cal.startOfDay(for: startDate)
+        let end    = cal.startOfDay(for: endDate)
+        while cursor < end {
+            let weekday = cal.component(.weekday, from: cursor) // 1=Sun … 7=Sat
+            if weekday >= 2 && weekday <= 6 { count += 1 }
+            cursor = cal.date(byAdding: .day, value: 1, to: cursor)!
+        }
+        return count
     }
 
     deinit { timer?.invalidate() }
