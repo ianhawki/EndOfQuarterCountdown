@@ -139,7 +139,7 @@ struct QuarterView: View {
                     .foregroundColor(DK.sec)
                     .padding(.bottom, 14)
             }
-            .frame(maxWidth: .infinity, minHeight: 180)
+            .frame(maxWidth: .infinity, minHeight: 160)
 
             // Weeks secondary
             if model.weeksRemaining > 0 {
@@ -163,8 +163,8 @@ struct QuarterView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 16)
-        .padding(.top, 16)
-        .padding(.bottom, 14)
+        .padding(.top, 10)
+        .padding(.bottom, 8)
     }
 
     // MARK: Progress bar ───────────────────────────────────────────────────────
@@ -204,7 +204,7 @@ struct QuarterView: View {
             }
         }
         .padding(.horizontal, 16)
-        .padding(.bottom, 14)
+        .padding(.bottom, 10)
     }
 
     // MARK: Info cards ─────────────────────────────────────────────────────────
@@ -225,7 +225,7 @@ struct QuarterView: View {
             )
         }
         .padding(.horizontal, 16)
-        .padding(.bottom, 14)
+        .padding(.bottom, 10)
     }
 
     private func infoCard(title: String, value: String, sub: String) -> some View {
@@ -419,7 +419,7 @@ struct QuarterView: View {
             }
             .padding(.horizontal, 16)
             .padding(.top, 8)
-            .padding(.bottom, 20)
+            .padding(.bottom, 14)
         }
     }
 
