@@ -29,26 +29,35 @@ struct QuarterView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            // Header is always visible at the top
             header
             thinDivider
-            countdownSection
-            progressSection
-            infoCards
 
-            if model.shouldWarnNextFY {
-                thinDivider
-                nextFYWarning
+            // Scrollable middle — handles editor expansion and warning banner
+            // without ever pushing the footer off screen
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 0) {
+                    countdownSection
+                    progressSection
+                    infoCards
+
+                    if model.shouldWarnNextFY {
+                        thinDivider
+                        nextFYWarning
+                    }
+
+                    if showingEditor {
+                        thinDivider
+                        quarterEditor
+                    }
+                }
             }
 
-            if showingEditor {
-                thinDivider
-                quarterEditor
-            }
-
+            // Footer is always visible at the bottom
             thinDivider
             footer
         }
-        .frame(width: 340)
+        .frame(width: 340, height: 510)   // fixed height — macOS sizes the window to this
         .background(DK.bg)
         .preferredColorScheme(.dark)
         // Collapse editor every time the popup window comes to front
