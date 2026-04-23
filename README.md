@@ -2,7 +2,7 @@
 
 A lightweight macOS menu bar app that counts down to the end of your current financial quarter — with a matching desktop widget for macOS Sonoma.
 
-![macOS 13+](https://img.shields.io/badge/macOS-13%2B-blue) ![Widget macOS 14+](https://img.shields.io/badge/Widget-macOS%2014%2B-purple) ![Swift 5](https://img.shields.io/badge/Swift-5-orange) ![Version](https://img.shields.io/badge/version-2.0.0-green)
+![macOS 13+](https://img.shields.io/badge/macOS-13%2B-blue) ![Widget macOS 14+](https://img.shields.io/badge/Widget-macOS%2014%2B-purple) ![Swift 5](https://img.shields.io/badge/Swift-5-orange) ![Version](https://img.shields.io/badge/version-2.2-green)
 
 ---
 
@@ -16,8 +16,9 @@ A lightweight macOS menu bar app that counts down to the end of your current fin
 - Rolls over automatically to the next quarter as each one ends
 - Recalculates instantly when the system timezone changes
 - **Launch at Login** support via SMAppService
+- **Business days / calendar days toggle** — switch between counting Mon–Fri only or all calendar days; menu bar label shows `bd` suffix when business days mode is active
 
-### Popup UI (v2.0 Dark Theme)
+### Popup UI (v2.2 Dark Theme)
 - **Large Arial Black countdown number** with blue gradient, with DAYS label at 20% size alongside
 - Weeks remaining and full end-of-quarter date displayed below the number
 - **Quarter progress bar** — shows current day within the quarter (e.g. Day 66 of 90) with percentage
@@ -101,9 +102,16 @@ The widget reads dates from a shared App Group container. To enable data sharing
 
 1. In Xcode, select the **EndOfQuarterCountdown** target → **Signing & Capabilities** → **+** → **App Groups**
    - Add: `group.com.example.endofquartercountdown`
-2. Repeat for the **EndOfQuarterWidget** target
-3. Build and run
-4. Right-click the desktop → **Edit Widgets** → find **Quarter Countdown** → add Small or Medium
+2. Repeat for the **EndOfQuarterWidgetExtension** target
+3. Build the app in Xcode (`⌘B`)
+4. Copy the built app to `/Applications` (macOS only registers widget extensions from apps in `/Applications`, not from Xcode's Derived Data folder):
+   ```bash
+   cp -R ~/Library/Developer/Xcode/DerivedData/EndOfQuarterCountdown-*/Build/Products/Debug/End\ of\ Quarter\ Countdown.app /Applications/
+   ```
+5. Open the app from `/Applications`
+6. Right-click the desktop → **Edit Widgets** → find **Quarter Countdown** → add Small or Medium
+
+> **Note:** Repeat step 4 after each Xcode build to keep the widget in sync with the latest code.
 
 ---
 
