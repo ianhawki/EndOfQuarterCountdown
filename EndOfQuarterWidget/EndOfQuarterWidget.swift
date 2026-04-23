@@ -153,7 +153,6 @@ struct SmallView: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        .background(Color.wkBg)
     }
 }
 
@@ -209,13 +208,15 @@ struct MediumView: View {
                         Text("\(Int((e.progress * 100).rounded()))%")
                             .font(.system(size: 10, weight: .bold)).foregroundColor(.wkAccent)
                     }
-                    GeometryReader { geo in
-                        ZStack(alignment: .leading) {
-                            RoundedRectangle(cornerRadius: 2).fill(Color.white.opacity(0.09))
-                            RoundedRectangle(cornerRadius: 2).fill(wkGradient)
-                                .frame(width: max(4, geo.size.width * e.progress))
-                        }
-                    }.frame(height: 4)
+                    // Progress bar — avoid GeometryReader inside widgets (can crash simulator)
+                    ZStack(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(Color.white.opacity(0.09))
+                            .frame(height: 4)
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(wkGradient)
+                            .frame(width: max(4, 120 * e.progress), height: 4)
+                    }
                     HStack {
                         Text("DAY \(e.dayInQuarter)").font(.system(size: 8)).foregroundColor(.wkTer)
                         Spacer()
@@ -242,7 +243,6 @@ struct MediumView: View {
             .padding(14)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         }
-        .background(Color.wkBg)
     }
 }
 
