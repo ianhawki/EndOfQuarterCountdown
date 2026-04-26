@@ -22,16 +22,17 @@ private let wkGradient = LinearGradient(
 // MARK: - Timeline entry
 
 struct QuarterEntry: TimelineEntry {
-    let date:           Date
-    let daysRemaining:  Int
-    let weeksRemaining: Int
-    let quarterLabel:   String
-    let financialYear:  String
-    let progress:       Double
-    let dayInQuarter:   Int
-    let totalDays:      Int
-    let fyEndDate:      Date?
-    let shouldWarn:     Bool
+    let date:            Date
+    let daysRemaining:   Int
+    let weeksRemaining:  Int
+    let quarterLabel:    String
+    let financialYear:   String
+    let progress:        Double
+    let dayInQuarter:    Int
+    let totalDays:       Int
+    let fyEndDate:       Date?
+    let shouldWarn:      Bool
+    let useBusinessDays: Bool
 }
 
 // MARK: - Data builder
@@ -42,10 +43,24 @@ private func buildDate(y: Int, m: Int, d: Int) -> Date {
     return Calendar.current.date(from: c) ?? Date()
 }
 
+private func businessDaysBetween(from startDate: Date, to endDate: Date) -> Int {
+    let cal    = Calendar.current
+    var count  = 0
+    var cursor = cal.startOfDay(for: startDate)
+    let end    = cal.startOfDay(for: endDate)
+    while cursor < end {
+        let weekday = cal.component(.weekday, from: cursor) // 1=Sun … 7=Sat
+        if weekday >= 2 && weekday <= 6 { count += 1 }
+        cursor = cal.date(byAdding: .day, value: 1, to: cursor)!
+    }
+    return count
+}
+
 private func buildEntry(for now: Date = Date()) -> QuarterEntry {
-    let ud  = UserDefaults(suiteName: kAppGroup) ?? .standard
-    let cal = Calendar.current
-    let yr  = cal.component(.year, from: now)
+    let ud             = UserDefaults(suiteName: kAppGroup) ?? .standard
+    let useBusinessDays = ud.bool(forKey: "useBusinessDays")
+    let cal            = Calendar.current
+    let yr             = cal.component(.year, from: now)
 
     struct Spec { let key, fyKey: String; let q, fm, fd, fy: Int }
     let specs = [
@@ -75,7 +90,11 @@ private func buildEntry(for now: Date = Date()) -> QuarterEntry {
 
     let todayStart = cal.startOfDay(for: now)
     let endStart   = cal.startOfDay(for: endDate)
-    let days = max(0, cal.dateComponents([.day], from: todayStart, to: endStart).day ?? 0)
+    let calDays    = max(0, cal.dateComponents([.day], from: todayStart, to: endStart).day ?? 0)
+    let days       = max(0, useBusinessDays
+        ? businessDaysBetween(from: now, to: endDate)
+        : calDays)
+    let weeks      = days / (useBusinessDays ? 5 : 7)
 
     let startDate: Date = {
         if idx == 0 { return cal.date(byAdding: .year, value: -1, to: ends.last!)! }
@@ -87,11 +106,12 @@ private func buildEntry(for now: Date = Date()) -> QuarterEntry {
     let progress  = Double(min(elapsed, total)) / Double(total)
 
     return QuarterEntry(
-        date: now, daysRemaining: days, weeksRemaining: days / 7,
+        date: now, daysRemaining: days, weeksRemaining: weeks,
         quarterLabel: label, financialYear: fy, progress: progress,
         dayInQuarter: max(1, elapsed + 1), totalDays: total,
         fyEndDate: ends.count > 3 ? ends[3] : nil,
-        shouldWarn: idx == 4 && days < 70
+        shouldWarn: idx == 4 && days < 70,
+        useBusinessDays: useBusinessDays
     )
 }
 
@@ -102,7 +122,7 @@ struct QuarterProvider: TimelineProvider {
         QuarterEntry(date: .now, daysRemaining: 42, weeksRemaining: 6,
                      quarterLabel: "FY26 Q3", financialYear: "FY26",
                      progress: 0.65, dayInQuarter: 48, totalDays: 90,
-                     fyEndDate: nil, shouldWarn: false)
+                     fyEndDate: nil, shouldWarn: false, useBusinessDays: false)
     }
     func getSnapshot(in context: Context, completion: @escaping (QuarterEntry) -> Void) {
         completion(buildEntry())
@@ -141,7 +161,7 @@ struct SmallView: View {
                     .font(.custom("Arial-Black", size: 62))
                     .foregroundStyle(wkGradient)
                     .minimumScaleFactor(0.5).lineLimit(1)
-                Text("d")
+                Text(e.useBusinessDays ? "bd" : "d")
                     .font(.custom("Arial-Black", size: 22))
                     .foregroundColor(.wkSec)
                     .padding(.bottom, 7)
@@ -184,7 +204,9 @@ struct MediumView: View {
                         .font(.custom("Arial-Black", size: 70))
                         .foregroundStyle(wkGradient)
                         .minimumScaleFactor(0.5).lineLimit(1)
-                    Text(e.daysRemaining == 1 ? "DAY" : "DAYS")
+                    Text(e.useBusinessDays
+                            ? (e.daysRemaining == 1 ? "BD" : "BUS DAYS")
+                            : (e.daysRemaining == 1 ? "DAY" : "DAYS"))
                         .font(.custom("Arial-Black", size: 14))
                         .foregroundColor(.wkSec)
                         .padding(.bottom, 10)
