@@ -57,7 +57,7 @@ struct QuarterView: View {
             thinDivider
             footer
         }
-        .frame(width: 340, height: 510)   // fixed height — macOS sizes the window to this
+        .frame(width: 340, height: 540)   // fixed height — macOS sizes the window to this
         .background(DK.bg)
         .preferredColorScheme(.dark)
         // Collapse editor every time the popup window comes to front
@@ -139,16 +139,16 @@ struct QuarterView: View {
             // Big number + DAYS beside it at 20% of number size
             HStack(alignment: .lastTextBaseline, spacing: 6) {
                 Text("\(model.daysRemaining)")
-                    .font(.custom("Arial-Black", size: 144))
+                    .font(.custom("Arial-Black", size: 120))
                     .foregroundStyle(blueGradient)
                     .fixedSize()
 
                 Text(model.daysRemaining == 1 ? "DAY" : "DAYS")
-                    .font(.custom("Arial-Black", size: 29)) // 20% of 144
+                    .font(.custom("Arial-Black", size: 24)) // 20% of 120
                     .foregroundColor(DK.sec)
-                    .padding(.bottom, 14)
+                    .padding(.bottom, 12)
             }
-            .frame(maxWidth: .infinity, minHeight: 160)
+            .frame(maxWidth: .infinity, minHeight: 140)
 
             // Weeks secondary
             if model.weeksRemaining > 0 {
