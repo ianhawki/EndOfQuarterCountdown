@@ -43,8 +43,9 @@ When fewer than 70 days remain on the final stored quarter (next FY Q1):
 - **Small** — FY badge, large countdown number, quarter label, weeks remaining
 - **Medium** — countdown + progress bar (Day X of Y) + weeks left + FY end date
 - Matches the app's dark theme with blue gradient number
+- **Respects the business days / calendar days toggle** set in the main app — small widget shows `bd` suffix, medium shows `BUS DAYS` when in business days mode
 - Refreshes daily at midnight via WidgetKit
-- Shares data with the main app via App Groups
+- Shares all settings with the main app via App Groups (dates, FY labels, day-counting mode)
 
 ---
 
