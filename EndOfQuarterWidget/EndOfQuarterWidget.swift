@@ -2,7 +2,7 @@ import WidgetKit
 import SwiftUI
 
 // MARK: - App Group (must match main app entitlements)
-private let kAppGroup = "group.com.example.endofquartercountdown"
+private let kAppGroup = "group.au.com.hawkinsmultimedia.endofquartercountdown"
 
 // MARK: - Colours (mirror main app DK tokens)
 private extension Color {

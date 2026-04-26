@@ -45,7 +45,7 @@ class QuarterModel: ObservableObject {
     /// True when counting down to the final stored quarter (next FY Q1) with fewer than 70 days left
     var shouldWarnNextFY: Bool { currentQuarter == 5 && daysRemaining < 70 }
 
-    static let appGroupID      = "group.com.example.endofquartercountdown"
+    static let appGroupID      = "group.au.com.hawkinsmultimedia.endofquartercountdown"
     static var ud: UserDefaults { UserDefaults(suiteName: appGroupID) ?? .standard }
 
     private static let defaultFeedURL = "https://hawkinsmultimedia.com.au/endofquarter.html"
