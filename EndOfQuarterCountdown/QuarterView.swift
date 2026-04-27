@@ -33,22 +33,23 @@ struct QuarterView: View {
             header
             thinDivider
 
-            // Scrollable middle — handles editor expansion and warning banner
-            // without ever pushing the footer off screen
+            // Scrollable middle — swaps between countdown view and editor
+            // so the editor always has the full area without needing to scroll
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 0) {
-                    countdownSection
-                    progressSection
-                    infoCards
-
-                    if model.shouldWarnNextFY {
-                        thinDivider
-                        nextFYWarning
-                    }
-
                     if showingEditor {
-                        thinDivider
+                        // Editor takes over the full scroll area
                         quarterEditor
+                    } else {
+                        // Normal countdown view
+                        countdownSection
+                        progressSection
+                        infoCards
+
+                        if model.shouldWarnNextFY {
+                            thinDivider
+                            nextFYWarning
+                        }
                     }
                 }
             }
