@@ -2,7 +2,7 @@
 
 A lightweight macOS menu bar app that counts down to the end of your current financial quarter — with a matching desktop widget for macOS Sonoma.
 
-![macOS 13+](https://img.shields.io/badge/macOS-13%2B-blue) ![Widget macOS 14+](https://img.shields.io/badge/Widget-macOS%2014%2B-purple) ![Swift 5](https://img.shields.io/badge/Swift-5-orange) ![Version](https://img.shields.io/badge/version-2.2-green)
+![macOS 13+](https://img.shields.io/badge/macOS-13%2B-blue) ![Widget macOS 14+](https://img.shields.io/badge/Widget-macOS%2014%2B-purple) ![Swift 5](https://img.shields.io/badge/Swift-5-orange) ![Version](https://img.shields.io/badge/version-2.5.3-green)
 
 ---
 
